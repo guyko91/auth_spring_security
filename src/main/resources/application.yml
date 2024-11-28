@@ -1,0 +1,13 @@
+spring:
+  profiles:
+    active: local
+
+prop:
+  auth:
+    tokenSecret: {{JWT_SECRET}}
+    tokenExpirationMilli: 864000000
+  oauth2:
+    authorizedRedirectUris:
+      - http://localhost:3000/oauth2/redirect
+      - myandroidapp://oauth2/redirect
+      - myiosapp://oauth2/redirect
