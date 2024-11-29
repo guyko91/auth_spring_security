@@ -3,6 +3,8 @@ package com.pineone.auth.security;
 import static org.springframework.boot.autoconfigure.security.servlet.PathRequest.toStaticResources;
 
 import com.pineone.auth.security.oauth.CustomOAuth2UserService;
+import com.pineone.auth.security.oauth.OAuth2SuccessHandler;
+import com.pineone.auth.security.oauth.Oauth2FailureHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +29,8 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final Oauth2FailureHandler oAuth2FailureHandler;
     private final CorsConfigurationSource corsConfigurationSource;
 
     private static final String[] AUTH_WHITELIST = {
@@ -64,9 +68,14 @@ public class SecurityConfig {
                     .authorizationEndpoint(authorization ->
                         authorization.baseUri("/oauth2/authorization")
                     )
+                    .redirectionEndpoint(redirection ->
+                        redirection.baseUri("/oauth2/login/code/*")
+                    )
                     .userInfoEndpoint(userInfo ->
                         userInfo.userService(customOAuth2UserService)
                     )
+                    .successHandler(oAuth2SuccessHandler)
+                    .failureHandler(oAuth2FailureHandler)
             );
 
         return http.build();

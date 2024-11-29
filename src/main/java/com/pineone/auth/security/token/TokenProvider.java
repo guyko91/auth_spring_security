@@ -50,13 +50,13 @@ public class TokenProvider {
 
     private TokenDto createToken(UserPrincipal userPrincipal, TokenType tokenType) {
         String subject = Long.toString(userPrincipal.getSeq());
-        Date now = new Date();
         Date expiryDate = getExpiryDateBy(tokenType);
 
         PrivateKey key;
         try {
             key = RSAKeyUtil.getPrivateKey();
         }catch (Exception e) {
+            e.printStackTrace();
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "RSA Key Error");
         }
 
