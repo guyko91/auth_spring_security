@@ -1,5 +1,6 @@
 package com.pineone.auth.api.controller.utils;
 
+import com.pineone.auth.security.token.TokenDto;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
