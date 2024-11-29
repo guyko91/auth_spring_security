@@ -1,11 +1,30 @@
 spring:
-  profiles:
-    active: local
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - profile
+              - email
+            redirect-uri: "{baseUrl}/{action}/oauth2/code/{registrationId}"
+            authorization-grant-type: authorization_code
+            client-name: Google
+        provider:
+          # Google 및 FaceBook 과 같은 유명 서비스들은 이미 기본적인 설정이 되어 있어 provider 생략 가능
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/auth
+            token-uri: https://accounts.google.com/o/oauth2/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            user-name-attribute: sub
 
 prop:
   auth:
-    tokenSecret: {{JWT_SECRET}}
-    tokenExpirationMilli: 864000000
+    accessTokenExpMilli: 1800000
+    refreshTokenExpMilli: 864000000
   oauth2:
     authorizedRedirectUris:
       - http://localhost:3000/oauth2/redirect

@@ -17,7 +17,8 @@ public class AuthProperties {
     @Data
     public static final class Auth {
         private String tokenSecret;
-        private long tokenExpirationMilli;
+        private long accessTokenExpMilli;
+        private long refreshTokenExpMilli;
     }
 
     @Data
