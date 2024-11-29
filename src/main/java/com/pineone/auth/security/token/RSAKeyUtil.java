@@ -1,4 +1,4 @@
-package com.pineone.auth.security;
+package com.pineone.auth.security.token;
 
 import java.io.IOException;
 import java.nio.file.Files;

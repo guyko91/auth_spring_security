@@ -3,7 +3,6 @@ package com.pineone.auth.security.token;
 import com.pineone.auth.api.controller.constant.ErrorCode;
 import com.pineone.auth.api.controller.exception.BusinessException;
 import com.pineone.auth.config.AuthProperties;
-import com.pineone.auth.security.RSAKeyUtil;
 import com.pineone.auth.security.UserPrincipal;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
