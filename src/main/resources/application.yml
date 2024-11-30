@@ -54,6 +54,8 @@ prop:
     accessTokenExpMilli: 1800000
     refreshTokenExpMilli: 864000000
   oauth2:
+    loginSuccessRedirectUri: http://localhost:3000/login-success
+    loginSuccessTokenQueryParam: accessToken
     authorizedRedirectUris:
       - http://localhost:3000/oauth2/redirect
       - myandroidapp://oauth2/redirect
