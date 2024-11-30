@@ -1,12 +1,9 @@
 package com.pineone.auth.api.controller.utils;
 
-import com.pineone.auth.security.token.TokenDto;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.Base64;
 import java.util.Optional;
-import org.springframework.util.SerializationUtils;
 
 public class CookieUtil {
 
@@ -46,14 +43,5 @@ public class CookieUtil {
             }
         }
     }
-
-    public static String serialize(Object obj) {
-        return Base64.getUrlEncoder().encodeToString(SerializationUtils.serialize(obj));
-    }
-
-    public static <T> T deserialize(Cookie cookie, Class<T> cls) {
-        return cls.cast(SerializationUtils.deserialize(Base64.getUrlDecoder().decode(cookie.getValue())));
-    }
-
 
 }
