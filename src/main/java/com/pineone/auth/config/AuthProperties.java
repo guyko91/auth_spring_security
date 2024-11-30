@@ -24,10 +24,14 @@ public class AuthProperties {
     public static class Auth {
         private long accessTokenExpMilli;
         private long refreshTokenExpMilli;
+
+        public int getCookieMaxSeconds() { return (int) refreshTokenExpMilli / 1000; }
     }
 
     @Data
     public static class OAuth2 {
+        private String loginSuccessRedirectUri;
+        private String loginSuccessTokenQueryParam;
         private List<String> authorizedRedirectUris = new ArrayList<>();
     }
 
