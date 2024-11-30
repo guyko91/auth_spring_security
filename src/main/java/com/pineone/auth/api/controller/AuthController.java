@@ -9,8 +9,7 @@ import com.pineone.auth.api.controller.dto.SignupResponse;
 import com.pineone.auth.api.controller.exception.BusinessException;
 import com.pineone.auth.api.controller.utils.CookieUtil;
 import com.pineone.auth.api.controller.utils.HeaderUtil;
-import com.pineone.auth.api.repository.UserRepository;
-import com.pineone.auth.api.service.AuthService;
+import com.pineone.auth.api.service.AuthFacade;
 import com.pineone.auth.api.controller.constant.ApiResult;
 import com.pineone.auth.api.service.dto.LoginResult;
 import com.pineone.auth.api.service.dto.RefreshResult;
@@ -34,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
+    private final AuthFacade authFacade;
     private final TokenProvider tokenProvider;
     private final AuthProperties authProperties;
 
@@ -44,7 +43,7 @@ public class AuthController {
         HttpServletResponse servletResponse,
         @RequestBody @Valid LoginRequest loginRequest) {
 
-        LoginResult result = authService.login(loginRequest.id(), loginRequest.password());
+        LoginResult result = authFacade.login(loginRequest.id(), loginRequest.password());
 
         TokenDto accessToken = result.tokenPair().accessToken();
         TokenDto refreshToken = result.tokenPair().refreshToken();
@@ -62,7 +61,7 @@ public class AuthController {
         HttpServletResponse servletResponse,
         @RequestBody @Valid SignUpRequest signUpRequest) {
 
-        SignUpResult result = authService.signUp(signUpRequest.id(), signUpRequest.password(),
+        SignUpResult result = authFacade.signUp(signUpRequest.id(), signUpRequest.password(),
             signUpRequest.name());
 
         TokenDto accessToken = result.tokenPair().accessToken();
@@ -86,7 +85,7 @@ public class AuthController {
         long userSeq = tokenProvider.validateAccessToken(accessToken);
         tokenProvider.validateRefreshToken(refreshToken);
 
-        RefreshResult refreshResult = authService.refresh(userSeq, refreshToken);
+        RefreshResult refreshResult = authFacade.refresh(userSeq, refreshToken);
 
         return ResponseEntity.ok(
             ApiResult.ok(new RefreshResponse(refreshResult.newAccessToken().token())));
@@ -102,7 +101,7 @@ public class AuthController {
             .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED_REFRESH_TOKEN_INVALID));
         long userSeq = tokenProvider.validateRefreshToken(refreshToken);
 
-        authService.logout(userSeq);
+        authFacade.logout(userSeq);
         CookieUtil.deleteCookie(servletRequest, servletResponse);
 
         return ResponseEntity.ok(ApiResult.ok());
@@ -113,10 +112,9 @@ public class AuthController {
         HttpServletResponse servletResponse,
         TokenDto refreshToken) {
 
-        long refreshTokenExpireMilli = authProperties.getAuth().getRefreshTokenExpMilli();
-        int cookieMaxAgeSecond = (int) refreshTokenExpireMilli / 1000;
+        int refreshTokenCookieMaxAgeSeconds = authProperties.getAuth().getCookieMaxSeconds();
 
         CookieUtil.deleteCookie(servletRequest, servletResponse);
-        CookieUtil.addCookie(servletResponse, refreshToken.token(), cookieMaxAgeSecond);
+        CookieUtil.addCookie(servletResponse, refreshToken.token(), refreshTokenCookieMaxAgeSeconds);
     }
 }
