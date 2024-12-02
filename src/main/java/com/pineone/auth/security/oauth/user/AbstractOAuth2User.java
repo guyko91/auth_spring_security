@@ -8,7 +8,7 @@ public abstract class AbstractOAuth2User {
         this.attributes = attributes;
     }
     protected String getAttribute(String key) {
-        return attributes.get(key) == null ? "" : (String) attributes.get(key);
+        return attributes.get(key) == null ? "" : String.valueOf(attributes.get(key));
     }
     public Map<String, Object> getAttributes() { return attributes; }
 }

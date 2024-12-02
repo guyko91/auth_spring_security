@@ -14,7 +14,7 @@ public class KakaoOAuth2User extends AbstractOAuth2User implements OAuth2UserInf
     public OAuth2Provider getProvider() { return OAuth2Provider.KAKAO; }
 
     @Override
-    public String getName() { return getAttribute("name"); }
+    public String getName() { return getAttribute("profile_nickname"); }
 
     @Override
     public String getEmail() { return getAttribute("email"); }

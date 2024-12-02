@@ -14,14 +14,16 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 public class UserPrincipal implements OAuth2User, UserDetails {
 
     private final Long seq;
+    private final String id;
     private final String email;
     private final String password;
     @Setter private Map<String, Object> attributes;
     // TODO Spring Security 에서 제공하는 ROLE 을 사용하면 주석 해제.
 //    private final Collection<? extends GrantedAuthority> authorities;
 
-    private UserPrincipal(Long seq, String email, String password) {
+    private UserPrincipal(Long seq, String id, String email, String password) {
         this.seq = seq;
+        this.id = id;
         this.email = email;
         this.password = password;
     }
@@ -32,6 +34,7 @@ public class UserPrincipal implements OAuth2User, UserDetails {
 //            singletonList(new SimpleGrantedAuthority("ROLE_USER"));
         return new UserPrincipal(
             user.getSeq(),
+            user.getId(),
             user.getEmail(),
             user.getPassword()
         );
@@ -44,7 +47,7 @@ public class UserPrincipal implements OAuth2User, UserDetails {
     }
 
     @Override
-    public String getUsername() { return email; }
+    public String getUsername() { return id; }
 
     @Override
     public String getName() { return String.valueOf(seq); }

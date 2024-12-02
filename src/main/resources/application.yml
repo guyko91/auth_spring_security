@@ -10,6 +10,14 @@ spring:
             redirect-uri: "{baseUrl}/oauth2/login/code/{registrationId}"
             authorization-grant-type: authorization_code
             client-name: Google
+          kakao:
+            client-id: ${KAKAO-CLIENT-ID}
+            client-secret: ${KAKAO-CLIENT-SECRET}
+            scope: profile_nickname, profile_image
+            redirect-uri: "{baseUrl}/oauth2/login/code/{registrationId}"
+            authorization-grant-type: authorization_code
+            client-authentication-method: client_secret_post
+            client-name: Kakao
         provider:
           # Google 및 FaceBook 과 같은 유명 서비스들은 이미 기본적인 설정이 되어 있어 provider 생략 가능
           google:
@@ -17,6 +25,11 @@ spring:
             token-uri: https://accounts.google.com/o/oauth2/token
             user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
             user-name-attribute: sub
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
 
   datasource:
     url: jdbc:h2:mem:testdb
@@ -54,7 +67,7 @@ prop:
     accessTokenExpMilli: 1800000
     refreshTokenExpMilli: 864000000
   oauth2:
-    loginSuccessRedirectUri: http://localhost:3000/login-success
+    loginSuccessRedirectUri: http://localhost:5173/login-success
     loginSuccessTokenQueryParam: accessToken
     authorizedRedirectUris:
       - http://localhost:3000/oauth2/redirect
