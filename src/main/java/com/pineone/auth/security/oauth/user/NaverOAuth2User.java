@@ -8,8 +8,7 @@ public class NaverOAuth2User extends AbstractOAuth2User implements OAuth2UserInf
     public NaverOAuth2User(Map<String, Object> attributes) { super(attributes); }
 
     @Override
-    public String getId() { return getAttribute("id");
-    }
+    public String getId() { return getAttribute(OAuth2Provider.NAVER.getIdentifierKey()); }
 
     @Override
     public OAuth2Provider getProvider() { return OAuth2Provider.NAVER; }

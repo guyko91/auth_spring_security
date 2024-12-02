@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 public enum OAuth2Provider {
 
     GOOGLE(null, "sub"),
-    FACEBOOK(null, "email"),
+    FACEBOOK(null, "id"),
     KAKAO("kakao_account", "id"),
     NAVER("response", "email")
     ;

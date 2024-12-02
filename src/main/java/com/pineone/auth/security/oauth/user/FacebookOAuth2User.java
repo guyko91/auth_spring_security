@@ -10,7 +10,7 @@ public class FacebookOAuth2User extends AbstractOAuth2User implements OAuth2User
     }
 
     @Override
-    public String getId() { return getAttribute("id"); }
+    public String getId() { return getAttribute(OAuth2Provider.FACEBOOK.getIdentifierKey()); }
 
     @Override
     public OAuth2Provider getProvider() { return OAuth2Provider.FACEBOOK; }
