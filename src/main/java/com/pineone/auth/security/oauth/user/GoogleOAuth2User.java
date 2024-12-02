@@ -10,16 +10,14 @@ public class GoogleOAuth2User extends AbstractOAuth2User implements OAuth2UserIn
     }
 
     @Override
-    public String getId() {
-        return getAttribute(OAuth2Provider.GOOGLE.getIdentifierKey());
-    }
+    public String getId() { return getAttribute(null, OAuth2Provider.GOOGLE.getIdentifierKey()); }
 
     @Override
     public OAuth2Provider getProvider() { return OAuth2Provider.GOOGLE; }
 
     @Override
-    public String getName() { return getAttribute("name"); }
+    public String getName() { return getAttribute(null, "name"); }
 
     @Override
-    public String getEmail() { return getAttribute("email"); }
+    public String getEmail() { return getAttribute(null, "email"); }
 }

@@ -8,14 +8,22 @@ public class KakaoOAuth2User extends AbstractOAuth2User implements OAuth2UserInf
     public KakaoOAuth2User(Map<String, Object> attributes) { super(attributes); }
 
     @Override
-    public String getId() { return getAttribute(OAuth2Provider.KAKAO.getIdentifierKey()); }
+    public String getId() {
+        return getAttribute(null, OAuth2Provider.KAKAO.getIdentifierKey());
+    }
 
     @Override
     public OAuth2Provider getProvider() { return OAuth2Provider.KAKAO; }
 
     @Override
-    public String getName() { return getAttribute("profile_nickname"); }
+    public String getName() {
+        String[] parentKeys = {OAuth2Provider.KAKAO.getAttributeKey()};
+        return getAttribute(parentKeys, "name");
+    }
 
     @Override
-    public String getEmail() { return getAttribute("email"); }
+    public String getEmail() {
+        String[] parentKeys = {OAuth2Provider.KAKAO.getAttributeKey()};
+        return getAttribute(parentKeys, "email");
+    }
 }
