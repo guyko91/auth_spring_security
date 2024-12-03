@@ -45,6 +45,11 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         return getOrCreateUser(oAuth2UserInfo, provider);
     }
 
+    private OAuth2Provider extractProviderFrom(OAuth2UserRequest oAuth2UserRequest) {
+        String providerId = oAuth2UserRequest.getClientRegistration().getRegistrationId();
+        return OAuth2Provider.valueOf(providerId.toUpperCase());
+    }
+
     private UserPrincipal getOrCreateUser(OAuth2UserInfo oauth2UserInfo, OAuth2Provider provider) {
         User savedUser = userRepository.findById(oauth2UserInfo.getId())
             .map(this::updateUser)
@@ -56,11 +61,6 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     private User updateUser(User user) {
         // TODO : 변경된 OAuth 사용자 정보로 업데이트 필요한 경우, 업데이트 로직 추가
         return user;
-    }
-
-    private OAuth2Provider extractProviderFrom(OAuth2UserRequest oAuth2UserRequest) {
-        String providerId = oAuth2UserRequest.getClientRegistration().getRegistrationId();
-        return OAuth2Provider.valueOf(providerId.toUpperCase());
     }
 
     private User createOAuthUser(OAuth2UserInfo oAuth2UserInfo, OAuth2Provider provider) {
