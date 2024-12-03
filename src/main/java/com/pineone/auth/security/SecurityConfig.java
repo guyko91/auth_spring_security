@@ -63,6 +63,7 @@ public class SecurityConfig {
                     new AntPathRequestMatcher("/oauth2/**")).permitAll()
                 .anyRequest().authenticated()
             )
+            // OAuth2 Client 설정
             .oauth2Login(customConfigurer ->
                 customConfigurer
                     .authorizationEndpoint(authorization ->
@@ -96,6 +97,8 @@ public class SecurityConfig {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
         daoAuthenticationProvider.setUserDetailsService(userDetailsService);
+        // 존재하지 않는 사용자 에러를 별도로 처리 (기본값 true : BadCredentialsException)
+        daoAuthenticationProvider.setHideUserNotFoundExceptions(false);
         return daoAuthenticationProvider;
     }
 

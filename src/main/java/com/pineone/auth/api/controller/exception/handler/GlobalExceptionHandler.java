@@ -243,7 +243,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         if (ex instanceof UsernameNotFoundException) {
             // 존재하지 않는 아이디
-            return createErrorResponseEntity(ErrorCode.UNAUTHORIZED_LOGIN_FAILED);
+            return createErrorResponseEntity(ErrorCode.UNAUTHORIZED_USER_NOT_FOUND);
         } else if (ex instanceof BadCredentialsException) {
             // 비밀번호 불일치
             return createErrorResponseEntity(ErrorCode.UNAUTHORIZED_LOGIN_FAILED);

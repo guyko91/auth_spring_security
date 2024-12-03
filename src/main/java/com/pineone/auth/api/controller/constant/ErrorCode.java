@@ -30,9 +30,9 @@ public enum ErrorCode implements ResponseCode{
     // 401 Unauthorized
     // ===============================================================================================================
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "40100000", "인증되지 않은 요청"),
-    UNAUTHORIZED_USER_NOT_FOUND(HttpStatus.UNAUTHORIZED, "40100001", "사용자를 찾을 수 없음"),
+    UNAUTHORIZED_USER_NOT_FOUND(HttpStatus.UNAUTHORIZED, "40101001", "사용자를 찾을 수 없음"),
+    UNAUTHORIZED_LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "40101002", "아이디 또는 비밀번호가 일치하지 않음"),
 
-    UNAUTHORIZED_LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "40101000", "아이디 또는 비밀번호가 일치하지 않음"),
     UNAUTHORIZED_TOKEN_ERROR(HttpStatus.UNAUTHORIZED, "40101100", "토큰 오류"),
     UNAUTHORIZED_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "40101101", "토큰 만료"),
     UNAUTHORIZED_TOKEN_SIGNATURE(HttpStatus.UNAUTHORIZED, "40101102", "토큰 서명 오류"),

@@ -50,7 +50,7 @@ public class AuthController {
 
         processCookie(servletRequest, servletResponse, refreshToken);
 
-        LoginResponse response = new LoginResponse(accessToken.token(), refreshToken.token());
+        LoginResponse response = new LoginResponse(accessToken.token());
 
         return ResponseEntity.ok(ApiResult.ok(response));
     }
@@ -96,13 +96,13 @@ public class AuthController {
         HttpServletRequest servletRequest,
         HttpServletResponse servletResponse) {
 
-        String refreshToken = CookieUtil.getCookie(servletRequest)
+        CookieUtil.getCookie(servletRequest)
             .map(Cookie::getValue)
-            .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED_REFRESH_TOKEN_INVALID));
-        long userSeq = tokenProvider.validateRefreshToken(refreshToken);
-
-        authFacade.logout(userSeq);
-        CookieUtil.deleteCookie(servletRequest, servletResponse);
+            .ifPresent(token -> {
+                long userSeq = tokenProvider.validateRefreshToken(token);
+                authFacade.logout(userSeq);
+                CookieUtil.deleteCookie(servletRequest, servletResponse);
+            });
 
         return ResponseEntity.ok(ApiResult.ok());
     }

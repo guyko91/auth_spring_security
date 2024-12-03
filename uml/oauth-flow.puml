@@ -1,0 +1,59 @@
+@startuml
+title OAuth 2.0 로그인 흐름 (Rest API Server)
+
+'---------------------------------------------------
+' 객체 정의
+'---------------------------------------------------
+participant "User (Resource Owner)"           as USER
+participant "Client"                          as CLIENT #lightyellow
+participant "Auth Server (OAuth Client)"                    as SERVER #lightblue
+box "Service Provider (OAuth Server)" #white
+participant "Authorization Server" as AUTH_SERVER #violet
+participant "Resource Server"     as RESOURCE_SERVER #lightgreen
+end box
+
+'---------------------------------------------------
+' OAuth 2.0 Authorization Flow
+'---------------------------------------------------
+ACTIVATE USER
+USER -> CLIENT : 1. SNS 로그인 버튼 클릭
+note right of CLIENT
+  GET ${baseUrl}/oauth2/authorization/{registrationId} HTTP 요청
+  registrationId : 각 Provider ID (ex: google, facebook, naver, kakao)
+end note
+
+group Automated by Spring Security OAuth Client
+  ACTIVATE CLIENT #lightyellow
+  CLIENT -> SERVER : 2. /oauth2/authorization/{registrationId}
+
+  ACTIVATE SERVER #lightblue
+  SERVER --> CLIENT : 3. 각 Provider 서비스 로그인 페이지로 리다이렉트
+  CLIENT --> USER : 4. Provider 로그인 페이지 노출
+  USER -> CLIENT : 5. Provider 로그인 및 권한 승인
+  CLIENT -> AUTH_SERVER : 6. Authorization Code 요청
+
+  ACTIVATE AUTH_SERVER #violet
+  AUTH_SERVER --> SERVER : 7. Authorization Code 응답
+  SERVER -> AUTH_SERVER : 8. AccessToken 요청
+  AUTH_SERVER --> SERVER : 9. AccessToken 응답
+  DEACTIVATE AUTH_SERVER
+
+  SERVER -> RESOURCE_SERVER : 10. 사용자 정보 요청
+  ACTIVATE RESOURCE_SERVER #lightgreen
+  RESOURCE_SERVER --> SERVER : 11. 사용자 정보 응답
+  DEACTIVATE RESOURCE_SERVER
+end
+
+SERVER -> SERVER : 12. 사용자 정보 저장 및 JWT 토큰 (Access, Refresh) 생성
+note left of SERVER
+  accessToken 은 쿼리 파라미터에,
+  refreshToken 은 쿠키에 전달
+end note
+SERVER --> CLIENT : 13. 로그인 성공 페이지로 리다이렉트
+DEACTIVATE SERVER
+CLIENT -> CLIENT : 14. JWT 토큰 저장
+CLIENT --> USER : 15. 로그인 성공 및 메인 화면으로 이동
+
+DEACTIVATE USER
+
+@enduml
