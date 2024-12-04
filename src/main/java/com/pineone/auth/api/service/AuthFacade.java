@@ -10,7 +10,7 @@ import com.pineone.auth.security.SecurityProvider;
 import com.pineone.auth.security.UserPrincipal;
 import com.pineone.auth.security.token.TokenDto;
 import com.pineone.auth.security.token.TokenPairDto;
-import com.pineone.auth.security.token.TokenProvider;
+import com.pineone.auth.security.token.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,16 +24,19 @@ public class AuthFacade {
     private final UserTokenService userTokenService;
 
     private final SecurityProvider securityProvider;
-    private final TokenProvider tokenProvider;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
     public LoginResult login(String id, String password) {
         UserPrincipal userPrincipal = securityProvider.createAuthentication(id, password);
-        TokenPairDto tokenPair = tokenProvider.createTokenPair(userPrincipal);
+        TokenPairDto tokenPair = jwtTokenProvider.createTokenPair(userPrincipal);
 
-        userTokenService.saveOrUpdateRefreshToken(userPrincipal, tokenPair);
+        User user = userService.getUserBy(userPrincipal.getSeq())
+            .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED_USER_NOT_FOUND));
 
-        return new LoginResult(tokenPair);
+        userTokenService.saveOrUpdateRefreshToken(userPrincipal.getSeq(), tokenPair);
+
+        return LoginResult.of(tokenPair, user);
     }
 
     @Transactional
@@ -42,11 +45,11 @@ public class AuthFacade {
 
         User user = userService.createUserWith(id, password, name);
         UserPrincipal userPrincipal = securityProvider.createAuthentication(id, password);
-        TokenPairDto tokenPair = tokenProvider.createTokenPair(userPrincipal);
+        TokenPairDto tokenPair = jwtTokenProvider.createTokenPair(userPrincipal);
 
-        userTokenService.saveOrUpdateRefreshToken(userPrincipal, tokenPair);
+        userTokenService.saveOrUpdateRefreshToken(user.getSeq(), tokenPair);
 
-        return new SignUpResult(user, tokenPair);
+        return SignUpResult.of(tokenPair, user);
     }
 
     @Transactional
@@ -58,9 +61,9 @@ public class AuthFacade {
             .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED_REFRESH_TOKEN_INVALID));
 
         UserPrincipal userPrincipal = securityProvider.createAuthentication(user.getId(), user.getPassword());
-        TokenDto newAccessToken = tokenProvider.createNewAccessToken(userPrincipal);
+        TokenDto newAccessToken = jwtTokenProvider.createNewAccessToken(userPrincipal);
 
-        return new RefreshResult(newAccessToken);
+        return RefreshResult.of(newAccessToken, user);
     }
 
     @Transactional
