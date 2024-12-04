@@ -16,7 +16,7 @@ import com.pineone.auth.api.service.dto.RefreshResult;
 import com.pineone.auth.api.service.dto.SignUpResult;
 import com.pineone.auth.config.AuthProperties;
 import com.pineone.auth.security.token.TokenDto;
-import com.pineone.auth.security.token.TokenProvider;
+import com.pineone.auth.security.token.jwt.JwtTokenProvider;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthFacade authFacade;
-    private final TokenProvider tokenProvider;
+    private final JwtTokenProvider jwtTokenProvider;
     private final AuthProperties authProperties;
 
     @PostMapping("login")
@@ -49,8 +49,9 @@ public class AuthController {
         TokenDto refreshToken = result.tokenPair().refreshToken();
 
         processCookie(servletRequest, servletResponse, refreshToken);
+        processHeader(servletResponse, accessToken);
 
-        LoginResponse response = new LoginResponse(accessToken.token());
+        LoginResponse response = new LoginResponse(result.user());
 
         return ResponseEntity.ok(ApiResult.ok(response));
     }
@@ -68,27 +69,32 @@ public class AuthController {
         TokenDto refreshToken = result.tokenPair().refreshToken();
 
         processCookie(servletRequest, servletResponse, refreshToken);
+        processHeader(servletResponse, accessToken);
 
-        SignupResponse response = SignupResponse.of(accessToken, result.user());
+        SignupResponse response = new SignupResponse(result.user());
 
         return ResponseEntity.ok(ApiResult.ok(response));
     }
 
+
     @PostMapping("/refresh")
-    public ResponseEntity<ApiResult<RefreshResponse>> refresh(HttpServletRequest servletRequest) {
+    public ResponseEntity<ApiResult<RefreshResponse>> refresh(
+        HttpServletRequest servletRequest,
+        HttpServletResponse servletResponse) {
 
         String accessToken = HeaderUtil.getAccessToken(servletRequest);
         String refreshToken = CookieUtil.getCookie(servletRequest)
             .map(Cookie::getValue)
             .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED_REFRESH_TOKEN_INVALID));
 
-        long userSeq = tokenProvider.validateAccessToken(accessToken);
-        tokenProvider.validateRefreshToken(refreshToken);
+        long userSeq = jwtTokenProvider.validateAccessToken(accessToken);
+        jwtTokenProvider.validateRefreshToken(refreshToken);
 
         RefreshResult refreshResult = authFacade.refresh(userSeq, refreshToken);
 
-        return ResponseEntity.ok(
-            ApiResult.ok(new RefreshResponse(refreshResult.newAccessToken().token())));
+        processHeader(servletResponse, refreshResult.newAccessToken());
+
+        return ResponseEntity.ok(ApiResult.ok(new RefreshResponse(refreshResult.user())));
     }
 
     @PostMapping("/logout")
@@ -99,12 +105,16 @@ public class AuthController {
         CookieUtil.getCookie(servletRequest)
             .map(Cookie::getValue)
             .ifPresent(token -> {
-                long userSeq = tokenProvider.validateRefreshToken(token);
+                long userSeq = jwtTokenProvider.validateRefreshToken(token);
                 authFacade.logout(userSeq);
                 CookieUtil.deleteCookie(servletRequest, servletResponse);
             });
 
         return ResponseEntity.ok(ApiResult.ok());
+    }
+
+    private void processHeader(HttpServletResponse servletResponse, TokenDto accessToken) {
+        HeaderUtil.setAccessToken(servletResponse, accessToken.token());
     }
 
     private void processCookie(

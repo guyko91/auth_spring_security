@@ -1,6 +1,7 @@
 package com.pineone.auth.api.controller.utils;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 public class HeaderUtil {
 
@@ -15,6 +16,11 @@ public class HeaderUtil {
         }
 
         return header.substring(TOKEN_PREFIX.length());
+    }
+
+    public static String setAccessToken(HttpServletResponse servletResponse, String accessToken) {
+        servletResponse.setHeader(AUTHORIZATION_HEADER_KEY, TOKEN_PREFIX + accessToken);
+        return accessToken;
     }
 
 }
