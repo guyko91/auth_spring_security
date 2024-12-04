@@ -28,14 +28,16 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
         OAuth2User oAuth2User = delegate.loadUser(userRequest);
 
-        try {
-            return process(userRequest, oAuth2User);
-        } catch (AuthenticationException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            // Throwing an instance of AuthenticationException will trigger the OAuth2AuthenticationFailureHandler
-            throw new InternalAuthenticationServiceException(ex.getMessage(), ex.getCause());
-        }
+        throw new OAuth2AuthenticationException("OAuth2 로그인 실패");
+
+//        try {
+//            return process(userRequest, oAuth2User);
+//        } catch (AuthenticationException ex) {
+//            throw ex;
+//        } catch (Exception ex) {
+//            // Throwing an instance of AuthenticationException will trigger the OAuth2AuthenticationFailureHandler
+//            throw new InternalAuthenticationServiceException(ex.getMessage(), ex.getCause());
+//        }
     }
 
     private OAuth2User process(OAuth2UserRequest oAuth2UserRequest, OAuth2User oAuth2User) {

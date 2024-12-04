@@ -46,6 +46,10 @@ public class UserPrincipal implements OAuth2User, UserDetails {
         return userPrincipal;
     }
 
+    public static UserPrincipal fromToken(long userSeq) {
+        return new UserPrincipal(userSeq, null, null, null);
+    }
+
     @Override
     public String getUsername() { return id; }
 

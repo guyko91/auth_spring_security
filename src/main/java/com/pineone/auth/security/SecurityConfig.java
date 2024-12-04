@@ -3,8 +3,11 @@ package com.pineone.auth.security;
 import static org.springframework.boot.autoconfigure.security.servlet.PathRequest.toStaticResources;
 
 import com.pineone.auth.security.oauth.CustomOAuth2UserService;
-import com.pineone.auth.security.oauth.OAuth2SuccessHandler;
-import com.pineone.auth.security.oauth.Oauth2FailureHandler;
+import com.pineone.auth.security.oauth.OAuth2AuthenticationHandler;
+import com.pineone.auth.security.token.jwt.JwtAccessDeniedHandler;
+import com.pineone.auth.security.token.jwt.JwtAuthenticationEntryPoint;
+import com.pineone.auth.security.token.jwt.JwtTokenProvider;
+import com.pineone.auth.security.token.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +22,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -27,18 +31,23 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final CustomUserDetailsService userDetailsService;
-    private final CustomOAuth2UserService customOAuth2UserService;
-    private final OAuth2SuccessHandler oAuth2SuccessHandler;
-    private final Oauth2FailureHandler oAuth2FailureHandler;
     private final CorsConfigurationSource corsConfigurationSource;
 
-    private static final String[] AUTH_WHITELIST = {
+    private final CustomUserDetailsService userDetailsService;
+    private final CustomOAuth2UserService customOAuth2UserService;
+
+    private final OAuth2AuthenticationHandler oAuth2AuthenticationHandler;
+
+    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+
+    private static final String[] FILTER_WHITELIST = {
         "/h2-console/**",
         "/v3/api-docs/**",
         "/swagger-ui/**",
-        "/test/**",
         "/error",
+        "/auth/**",
         "/health",
     };
 
@@ -52,17 +61,25 @@ public class SecurityConfig {
             .formLogin(AbstractHttpConfigurer::disable)
             .httpBasic(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
             // 리소스에 대한 보안 설정
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(toStaticResources().atCommonLocations()).permitAll()
                 // 필터를 적용하지 않을 패턴
-                .requestMatchers(AUTH_WHITELIST).permitAll()
+                .requestMatchers(FILTER_WHITELIST).permitAll()
                 // TODO 인증 없이 접근 가능한 URL 패턴 (회원가입, 로그인 등)
-                .requestMatchers(
-                    new AntPathRequestMatcher("/auth/**"),
-                    new AntPathRequestMatcher("/oauth2/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/oauth2/**")).permitAll()
                 .anyRequest().authenticated()
             )
+
+            // JWT 설정
+            .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, FILTER_WHITELIST), UsernamePasswordAuthenticationFilter.class)
+            .exceptionHandling(handler -> handler
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                .accessDeniedHandler(jwtAccessDeniedHandler)
+            )
+
             // OAuth2 Client 설정
             .oauth2Login(customConfigurer ->
                 customConfigurer
@@ -75,9 +92,10 @@ public class SecurityConfig {
                     .userInfoEndpoint(userInfo ->
                         userInfo.userService(customOAuth2UserService)
                     )
-                    .successHandler(oAuth2SuccessHandler)
-                    .failureHandler(oAuth2FailureHandler)
-            );
+                    .successHandler(oAuth2AuthenticationHandler)
+                    .failureHandler(oAuth2AuthenticationHandler)
+            )
+        ;
 
         return http.build();
     }
