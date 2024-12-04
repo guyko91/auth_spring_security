@@ -22,7 +22,7 @@ note right of CLIENT
   registrationId : 각 Provider ID (ex: google, facebook, naver, kakao)
 end note
 
-group Automated by Spring Security OAuth Client
+'group Automated by Spring Security OAuth Client
   ACTIVATE CLIENT #lightyellow
   CLIENT -> SERVER : 2. /oauth2/authorization/{registrationId}
 
@@ -42,7 +42,7 @@ group Automated by Spring Security OAuth Client
   ACTIVATE RESOURCE_SERVER #lightgreen
   RESOURCE_SERVER --> SERVER : 11. 사용자 정보 응답
   DEACTIVATE RESOURCE_SERVER
-end
+'end
 
 SERVER -> SERVER : 12. 사용자 정보 저장 및 JWT 토큰 (Access, Refresh) 생성
 note left of SERVER
