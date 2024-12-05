@@ -52,7 +52,7 @@ public class SecurityConfig {
         "/error",
         "/health",
         "/auth/login/**",
-        "/auth/refresh/**",
+        "/auth/signup/**",
     };
 
     @Bean
