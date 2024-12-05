@@ -2,11 +2,12 @@ package com.pineone.auth.security;
 
 import static org.springframework.boot.autoconfigure.security.servlet.PathRequest.toStaticResources;
 
+import com.pineone.auth.api.service.ServletAuthHandler;
 import com.pineone.auth.security.oauth.CustomOAuth2UserService;
 import com.pineone.auth.security.oauth.OAuth2AuthenticationHandler;
-import com.pineone.auth.security.token.jwt.JwtAccessDeniedHandler;
-import com.pineone.auth.security.token.jwt.JwtAuthenticationEntryPoint;
-import com.pineone.auth.security.token.jwt.JwtTokenProvider;
+import com.pineone.auth.security.token.jwt.TokenAccessDeniedHandler;
+import com.pineone.auth.security.token.jwt.TokenAuthenticationEntryPoint;
+import com.pineone.auth.security.token.TokenProvider;
 import com.pineone.auth.security.token.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +26,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -38,17 +40,19 @@ public class SecurityConfig {
 
     private final OAuth2AuthenticationHandler oAuth2AuthenticationHandler;
 
-    private final JwtTokenProvider jwtTokenProvider;
-    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    private final ServletAuthHandler servletAuthHandler;
+    private final SecurityProvider securityProvider;
+
+    private final TokenProvider tokenProvider;
+    private final TokenAuthenticationEntryPoint tokenAuthenticationEntryPoint;
+    private final TokenAccessDeniedHandler tokenAccessDeniedHandler;
 
     private static final String[] FILTER_WHITELIST = {
         "/h2-console/**",
-        "/v3/api-docs/**",
-        "/swagger-ui/**",
         "/error",
-        "/auth/**",
         "/health",
+        "/auth/login/**",
+        "/auth/refresh/**",
     };
 
     @Bean
@@ -68,16 +72,20 @@ public class SecurityConfig {
                 // 필터를 적용하지 않을 패턴
                 .requestMatchers(FILTER_WHITELIST).permitAll()
                 // TODO 인증 없이 접근 가능한 URL 패턴 (회원가입, 로그인 등)
-                .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/auth/login/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/auth/signup/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/oauth2/**")).permitAll()
                 .anyRequest().authenticated()
             )
 
-            // JWT 설정
-            .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, FILTER_WHITELIST), UsernamePasswordAuthenticationFilter.class)
+            // 토큰 Filter 설정
+            .addFilterBefore(
+                configureAuthenticationFilter()
+                , UsernamePasswordAuthenticationFilter.class
+            )
             .exceptionHandling(handler -> handler
-                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                .accessDeniedHandler(jwtAccessDeniedHandler)
+                .authenticationEntryPoint(tokenAuthenticationEntryPoint)
+                .accessDeniedHandler(tokenAccessDeniedHandler)
             )
 
             // OAuth2 Client 설정
@@ -101,7 +109,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
@@ -118,6 +128,16 @@ public class SecurityConfig {
         // 존재하지 않는 사용자 에러를 별도로 처리 (기본값 true : BadCredentialsException)
         daoAuthenticationProvider.setHideUserNotFoundExceptions(false);
         return daoAuthenticationProvider;
+    }
+
+    private OncePerRequestFilter configureAuthenticationFilter() {
+        // 인증에 사용할 필터를 명시적으로 생성하여 반환
+        return new JwtAuthenticationFilter(
+            servletAuthHandler,
+            tokenProvider,
+            securityProvider,
+            FILTER_WHITELIST
+        );
     }
 
 }

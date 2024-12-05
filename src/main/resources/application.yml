@@ -77,6 +77,7 @@ spring:
 
 prop:
   auth:
+    temporaryTokenExpMilli: 60000
     accessTokenExpMilli: 1800000
     refreshTokenExpMilli: 864000000
   oauth2:

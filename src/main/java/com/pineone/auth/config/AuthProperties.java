@@ -2,9 +2,7 @@ package com.pineone.auth.config;
 
 import java.util.ArrayList;
 import java.util.List;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.stereotype.Component;
@@ -22,6 +20,7 @@ public class AuthProperties {
 
     @Data
     public static class Auth {
+        private long temporaryTokenExpMilli;
         private long accessTokenExpMilli;
         private long refreshTokenExpMilli;
 

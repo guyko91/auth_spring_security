@@ -15,16 +15,16 @@ public class UserPrincipal implements OAuth2User, UserDetails {
 
     private final Long seq;
     private final String id;
-    private final String email;
+    private final String name;
     private final String password;
     @Setter private Map<String, Object> attributes;
     // TODO Spring Security 에서 제공하는 ROLE 을 사용하면 주석 해제.
 //    private final Collection<? extends GrantedAuthority> authorities;
 
-    private UserPrincipal(Long seq, String id, String email, String password) {
+    private UserPrincipal(Long seq, String id, String name, String password) {
         this.seq = seq;
         this.id = id;
-        this.email = email;
+        this.name = name;
         this.password = password;
     }
 
@@ -35,7 +35,7 @@ public class UserPrincipal implements OAuth2User, UserDetails {
         return new UserPrincipal(
             user.getSeq(),
             user.getId(),
-            user.getEmail(),
+            user.getName(),
             user.getPassword()
         );
     }
@@ -46,8 +46,8 @@ public class UserPrincipal implements OAuth2User, UserDetails {
         return userPrincipal;
     }
 
-    public static UserPrincipal fromToken(long userSeq) {
-        return new UserPrincipal(userSeq, null, null, null);
+    public static UserPrincipal of(long seq, String id, String name) {
+        return new UserPrincipal(seq, id, name, null);
     }
 
     @Override

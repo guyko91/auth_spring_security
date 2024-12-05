@@ -10,13 +10,13 @@ import com.pineone.auth.security.SecurityProvider;
 import com.pineone.auth.security.UserPrincipal;
 import com.pineone.auth.security.token.TokenDto;
 import com.pineone.auth.security.token.TokenPairDto;
-import com.pineone.auth.security.token.jwt.JwtTokenProvider;
+import com.pineone.auth.security.token.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional
 @RequiredArgsConstructor
 public class AuthFacade {
 
@@ -24,51 +24,51 @@ public class AuthFacade {
     private final UserTokenService userTokenService;
 
     private final SecurityProvider securityProvider;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final TokenProvider tokenProvider;
 
-    @Transactional
     public LoginResult login(String id, String password) {
-        UserPrincipal userPrincipal = securityProvider.createAuthentication(id, password);
-        TokenPairDto tokenPair = jwtTokenProvider.createTokenPair(userPrincipal);
+        UserPrincipal userPrincipal = securityProvider.authenticateIdPwd(id, password);
+        TokenPairDto tokenPair = tokenProvider.createTokenPair(userPrincipal);
 
         User user = userService.getUserBy(userPrincipal.getSeq())
             .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED_USER_NOT_FOUND));
 
-        userTokenService.saveOrUpdateRefreshToken(userPrincipal.getSeq(), tokenPair);
+        userTokenService.saveOrUpdateRefreshToken(userPrincipal.getSeq(), tokenPair.refreshToken());
 
         return LoginResult.of(tokenPair, user);
     }
 
-    @Transactional
     public SignUpResult signUp(String id, String password, String name) {
         userService.checkUserIdDuplication(id);
 
         User user = userService.createUserWith(id, password, name);
-        UserPrincipal userPrincipal = securityProvider.createAuthentication(id, password);
-        TokenPairDto tokenPair = jwtTokenProvider.createTokenPair(userPrincipal);
+        UserPrincipal userPrincipal = securityProvider.authenticateIdPwd(id, password);
+        TokenPairDto tokenPair = tokenProvider.createTokenPair(userPrincipal);
 
-        userTokenService.saveOrUpdateRefreshToken(user.getSeq(), tokenPair);
+        userTokenService.saveOrUpdateRefreshToken(user.getSeq(), tokenPair.refreshToken());
 
         return SignUpResult.of(tokenPair, user);
     }
 
-    @Transactional
-    public RefreshResult refresh(long userSeq, String refreshToken) {
-        User user = userService.getUserBy(userSeq)
+    public RefreshResult refresh(String refreshToken) {
+
+        UserPrincipal userPrincipal = securityProvider.getCurrentUserPrincipal();
+
+        User user = userService.getUserBy(userPrincipal.getSeq())
             .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED_USER_NOT_FOUND));
 
         userTokenService.findUserTokenBy(refreshToken)
             .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED_REFRESH_TOKEN_INVALID));
 
-        UserPrincipal userPrincipal = securityProvider.createAuthentication(user.getId(), user.getPassword());
-        TokenDto newAccessToken = jwtTokenProvider.createNewAccessToken(userPrincipal);
+        TokenDto newAccessToken = tokenProvider.createNewAccessToken(userPrincipal);
 
         return RefreshResult.of(newAccessToken, user);
     }
 
-    @Transactional
-    public void logout(long userSeq) {
-        userTokenService.logoutUserToken(userSeq);
+    public void logout() {
+        UserPrincipal userPrincipal = securityProvider.getCurrentUserPrincipal();
+
+        userTokenService.logoutUserToken(userPrincipal.getSeq());
     }
 
 }

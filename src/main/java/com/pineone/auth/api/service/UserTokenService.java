@@ -28,9 +28,7 @@ public class UserTokenService {
     }
 
     @Transactional
-    public void saveOrUpdateRefreshToken(long userSeq, TokenPairDto tokenPair) {
-        TokenDto refreshToken = tokenPair.refreshToken();
-
+    public void saveOrUpdateRefreshToken(long userSeq, TokenDto refreshToken) {
         Optional<UserToken> userToken = userTokenRepository.findByUserSeq(userSeq);
 
         if(userToken.isPresent()) {

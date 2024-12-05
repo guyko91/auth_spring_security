@@ -1,9 +1,11 @@
 package com.pineone.auth.security.token.jwt;
 
 import com.pineone.auth.api.controller.constant.ErrorCode;
+import com.pineone.auth.api.service.ServletAuthHandler;
 import com.pineone.auth.security.CustomAuthenticationException;
-import com.pineone.auth.api.controller.utils.HeaderUtil;
+import com.pineone.auth.security.SecurityProvider;
 import com.pineone.auth.security.UserPrincipal;
+import com.pineone.auth.security.token.TokenProvider;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -14,22 +16,22 @@ import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.AntPathMatcher;
-import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    public static final String HEADER_KEY = "exception";
-
-    private final JwtTokenProvider jwtProvider;
+    /**
+     * 필터는 빈으로 설정 시 서블릿에도 중복 등록되어 동작하므로, 필터를 빈으로 등록하지 않는다.
+     */
+    private final ServletAuthHandler servletAuthHandler;
+    private final TokenProvider tokenProvider;
+    private final SecurityProvider securityProvider;
     private final String[] AUTH_WHITELIST;
+
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     @Override
@@ -46,7 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-        FilterChain filterChain) throws ServletException, IOException {
+        FilterChain filterChain) throws AuthenticationException {
 
         try {
             authenticateRequest(request);
@@ -64,33 +66,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void authenticateRequest(HttpServletRequest request) {
-        String accessToken = extractAccessToken(request);
-        Authentication authentication = createAuthentication(accessToken);
+        String accessToken = servletAuthHandler.getAccessTokenStringFrom(request)
+            .orElseThrow(() -> new CustomAuthenticationException(ErrorCode.UNAUTHORIZED, "인증 토큰이 없습니다."));
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        UserPrincipal userPrincipal = tokenProvider.validateAndGetUserPrincipalFrom(accessToken);
 
-        log.debug("SecurityContext에 '{}' 인증 정보를 저장했습니다. uri: {}",
-            authentication.getName(), request.getRequestURI());
-    }
-
-    private String extractAccessToken(HttpServletRequest request) {
-        String accessToken = HeaderUtil.getAccessToken(request);
-
-        if (!StringUtils.hasText(accessToken)) {
-            throw new CustomAuthenticationException(ErrorCode.UNAUTHORIZED, "인증 토큰이 없습니다.");
-        }
-
-        return accessToken;
-    }
-
-    private Authentication createAuthentication(String accessToken) {
-        UserPrincipal userPrincipal = jwtProvider.getUserPrincipalFrom(accessToken);
-
-        return new UsernamePasswordAuthenticationToken(
-            userPrincipal,
-            null,
-            userPrincipal.getAuthorities()
-        );
+        securityProvider.authenticateTokenUserPrincipal(userPrincipal);
     }
 
 }
