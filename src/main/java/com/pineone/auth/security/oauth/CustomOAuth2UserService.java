@@ -1,7 +1,7 @@
 package com.pineone.auth.security.oauth;
 
 import com.pineone.auth.api.model.User;
-import com.pineone.auth.api.service.UserService;
+import com.pineone.auth.api.repository.UserRepository;
 import com.pineone.auth.security.UserPrincipal;
 import com.pineone.auth.security.oauth.user.OAuth2UserInfo;
 import com.pineone.auth.security.oauth.user.OAuth2UserInfoFactory;
@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
-    private final UserService userService;
+    private final UserRepository userRepository;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -51,9 +51,9 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     }
 
     private UserPrincipal getOrCreateUser(OAuth2UserInfo oauth2UserInfo) {
-        User savedUser = userService.getUserBy(oauth2UserInfo.getId())
+        User savedUser = userRepository.findById(oauth2UserInfo.getId())
             .map(this::updateUser)
-            .orElseGet(() -> userService.createUserWith(oauth2UserInfo));
+            .orElseGet(() -> createOAuthUser(oauth2UserInfo));
 
         return UserPrincipal.create(savedUser, oauth2UserInfo.getAttributes());
     }
@@ -61,6 +61,17 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     private User updateUser(User user) {
         // TODO : 변경된 OAuth 사용자 정보로 업데이트 필요한 경우, 업데이트 로직 추가
         return user;
+    }
+
+    private User createOAuthUser(OAuth2UserInfo oAuth2UserInfo) {
+        return userRepository.saveAndFlush(
+            User.createOAuth2(
+                oAuth2UserInfo.getId(),
+                oAuth2UserInfo.getName(),
+                oAuth2UserInfo.getEmail(),
+                oAuth2UserInfo.getProvider().toAuthProvider()
+            )
+        );
     }
 
 }

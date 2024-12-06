@@ -1,7 +1,7 @@
 package com.pineone.auth.security;
 
 import com.pineone.auth.api.model.User;
-import com.pineone.auth.api.service.UserService;
+import com.pineone.auth.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -12,11 +12,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UserService userService;
+    private final UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userService.getUserBy(username)
+        User user = userRepository.findById(username)
             .orElseThrow(
                 () -> new UsernameNotFoundException("User not found with username: " + username));
         return UserPrincipal.create(user);
