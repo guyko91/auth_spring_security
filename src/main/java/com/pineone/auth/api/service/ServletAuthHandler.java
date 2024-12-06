@@ -42,9 +42,8 @@ public class ServletAuthHandler {
 
     public void processTokenRedirectResponse(HttpServletRequest request, HttpServletResponse response, TokenPairDto tokenPair)
         throws IOException {
-        setAccessTokenResponse(response, tokenPair.accessToken().token());
         processRefreshTokenResponse(request, response, tokenPair.refreshToken().token());
-        setRedirectResponse(response);
+        setRedirectResponse(response, tokenPair.accessToken().token());
     }
 
     public void writeErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
@@ -96,7 +95,7 @@ public class ServletAuthHandler {
     }
 
     private void setAccessTokenResponse(HttpServletResponse response, String accessTokenString) {
-        response.setHeader(AUTHORIZATION_HEADER_KEY, TOKEN_PREFIX + accessTokenString);
+        response.setHeader(AUTHORIZATION_HEADER_KEY, createAuthorizationValue(accessTokenString));
     }
 
     private void processRefreshTokenResponse(HttpServletRequest request, HttpServletResponse response, String refreshToken) {
@@ -112,8 +111,17 @@ public class ServletAuthHandler {
         return authorizationHeader.substring(TOKEN_PREFIX.length()).trim();
     }
 
-    private void setRedirectResponse(HttpServletResponse response) throws IOException {
+    private String createAuthorizationValue(String tokenString) {
+        return TOKEN_PREFIX + tokenString;
+    }
+
+    private void setRedirectResponse(HttpServletResponse response, String tokenString) throws IOException {
+
+        String loginSuccessTokenQueryParamName = authProperties.getOauth2().getLoginSuccessTokenQueryParam();
+        String authorizationTokenValue = createAuthorizationValue(tokenString);
+
         String redirectUri = UriComponentsBuilder.fromUriString(authProperties.getOauth2().getLoginSuccessRedirectUri())
+            .queryParam(loginSuccessTokenQueryParamName, authorizationTokenValue)
             .build().toUriString();
 
         response.sendRedirect(redirectUri);

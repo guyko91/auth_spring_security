@@ -10,7 +10,7 @@ public class OAuth2UserInfoFactory {
             case GOOGLE -> new GoogleOAuth2User(attributes);
             case FACEBOOK -> new FacebookOAuth2User(attributes);
             case KAKAO -> new KakaoOAuth2User(attributes);
-//            case NAVER -> new NaverOAuth2User(attributes);
+            case NAVER -> new NaverOAuth2User(attributes);
             default -> throw new IllegalArgumentException("Unsupported provider: " + provider);
         };
     }

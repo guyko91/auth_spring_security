@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.Getter;
 
 @Getter
@@ -33,6 +34,9 @@ public class User {
 
     @Column(name = "email_verified")
     private Boolean emailVerified;
+
+    @Column(name = "2factor_auth_at")
+    private LocalDateTime last2factorAuthAt;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "provider")

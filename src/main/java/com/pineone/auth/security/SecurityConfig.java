@@ -5,10 +5,10 @@ import static org.springframework.boot.autoconfigure.security.servlet.PathReques
 import com.pineone.auth.api.service.ServletAuthHandler;
 import com.pineone.auth.security.oauth.CustomOAuth2UserService;
 import com.pineone.auth.security.oauth.OAuth2AuthenticationHandler;
-import com.pineone.auth.security.token.jwt.TokenAccessDeniedHandler;
-import com.pineone.auth.security.token.jwt.TokenAuthenticationEntryPoint;
 import com.pineone.auth.security.token.TokenProvider;
 import com.pineone.auth.security.token.jwt.JwtAuthenticationFilter;
+import com.pineone.auth.security.token.jwt.TokenAccessDeniedHandler;
+import com.pineone.auth.security.token.jwt.TokenAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -62,8 +62,10 @@ public class SecurityConfig {
             // 공통 설정 (CSRF, 세션 관리 등)
             .csrf(AbstractHttpConfigurer::disable)
             .cors(corsConfigurer -> corsConfigurer.configurationSource(corsConfigurationSource))
+            .formLogin(formLogin ->
+                formLogin.loginPage("login")
+            )
             .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
-            .formLogin(AbstractHttpConfigurer::disable)
             .httpBasic(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
@@ -92,6 +94,7 @@ public class SecurityConfig {
             // OAuth2 Client 설정
             .oauth2Login(customConfigurer ->
                 customConfigurer
+                    .loginPage("/login")
                     .authorizationEndpoint(authorization ->
                         authorization.baseUri("/oauth2/authorization")
                     )
