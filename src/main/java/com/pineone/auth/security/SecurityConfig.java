@@ -53,6 +53,7 @@ public class SecurityConfig {
         "/health",
         "/auth/login/**",
         "/auth/signup/**",
+        "/auth/logout/**"
     };
 
     @Bean

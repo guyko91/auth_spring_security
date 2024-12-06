@@ -23,6 +23,12 @@ public class UserTokenService {
             .ifPresent(userTokenRepository::delete);
     }
 
+    @Transactional
+    public void logoutUserToken(String refreshToken) {
+        userTokenRepository.findByRefreshToken(refreshToken)
+            .ifPresent(userTokenRepository::delete);
+    }
+
     public Optional<UserToken> findUserTokenBy(String refreshToken) {
         return userTokenRepository.findByRefreshToken(refreshToken);
     }

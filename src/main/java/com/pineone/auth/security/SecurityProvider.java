@@ -1,7 +1,6 @@
 package com.pineone.auth.security;
 
-import com.pineone.auth.api.controller.constant.ErrorCode;
-import com.pineone.auth.api.controller.exception.BusinessException;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -48,14 +47,16 @@ public class SecurityProvider {
      * SecurityContextHolder 에서 현재 인증된 사용자 정보를 가져온다.
      * @return
      */
-    public UserPrincipal getCurrentUserPrincipal() {
+    public Optional<UserPrincipal> getCurrentUserPrincipal() {
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new BusinessException(ErrorCode.UNAUTHORIZED);
+            return Optional.empty();
         }
 
-        return (UserPrincipal) authentication.getPrincipal();
+        UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
+
+        return Optional.of(principal);
     }
 
 }

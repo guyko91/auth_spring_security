@@ -24,6 +24,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    public static final String TOKEN_EXCEPTION_ATTRIBUTE_KEY = "TOKEN_EXCEPTION";
+
     /**
      * 필터는 빈으로 설정 시 서블릿에도 중복 등록되어 동작하므로, 필터를 빈으로 등록하지 않는다.
      */
@@ -48,20 +50,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-        FilterChain filterChain) throws AuthenticationException {
+        FilterChain filterChain) throws ServletException, IOException {
 
         try {
             authenticateRequest(request);
-            filterChain.doFilter(request, response);
         } catch (ExpiredJwtException e) {
-            throw new CustomAuthenticationException(ErrorCode.UNAUTHORIZED_TOKEN_EXPIRED, "JWT 토큰이 만료되었습니다.");
+            setTokenExceptionAttribute(request, ErrorCode.UNAUTHORIZED_TOKEN_EXPIRED);
         } catch (JwtException e) {
-            throw new CustomAuthenticationException(ErrorCode.UNAUTHORIZED_TOKEN_ERROR, "유효하지 않은 JWT 토큰입니다.");
+            setTokenExceptionAttribute(request, ErrorCode.UNAUTHORIZED_TOKEN_ERROR);
         } catch (AuthenticationException e) {
-            throw new CustomAuthenticationException(ErrorCode.UNAUTHORIZED, "인증에 실패했습니다.");
+            setTokenExceptionAttribute(request, ErrorCode.UNAUTHORIZED);
         } catch (Exception e) {
-            log.error("Unexpected error during JWT authentication", e);
-            throw new CustomAuthenticationException(ErrorCode.INTERNAL_SERVER_ERROR, "인증 처리 중 예상치 못한 오류가 발생했습니다.");
+            setTokenExceptionAttribute(request, ErrorCode.INTERNAL_SERVER_ERROR);
+        } finally {
+            filterChain.doFilter(request, response);
         }
     }
 
@@ -72,6 +74,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         UserPrincipal userPrincipal = tokenProvider.validateAndGetUserPrincipalFrom(accessToken);
 
         securityProvider.authenticateTokenUserPrincipal(userPrincipal);
+    }
+
+    private void setTokenExceptionAttribute(HttpServletRequest request, ErrorCode errorCode) {
+        request.setAttribute(TOKEN_EXCEPTION_ATTRIBUTE_KEY, errorCode);
     }
 
 }

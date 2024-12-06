@@ -2,7 +2,6 @@ package com.pineone.auth.security.token.jwt;
 
 import com.pineone.auth.api.controller.constant.ErrorCode;
 import com.pineone.auth.api.controller.exception.BusinessException;
-import com.pineone.auth.config.AuthProperties;
 import com.pineone.auth.security.UserPrincipal;
 import com.pineone.auth.security.token.RSAKeyUtil;
 import com.pineone.auth.security.token.TokenDto;
@@ -16,23 +15,18 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Map;
 import java.util.TimeZone;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class JwtProvider {
-
-    private final AuthProperties authProperties;
 
     public static final String JWT_CLAIM_KEY_ID = "id";
     public static final String JWT_CLAIM_KEY_NAME = "name";
 
-    public TokenDto createToken(UserPrincipal userPrincipal, TokenType tokenType) {
+    public TokenDto createToken(UserPrincipal userPrincipal, TokenType tokenType, Date expiryDate) {
         PrivateKey key = getPrivateKey();
 
         String subject = Long.toString(userPrincipal.getSeq());
-        Date expiryDate = getExpiryDateBy(tokenType);
 
         Map<String, Object> customClaims = Map.of(
             JWT_CLAIM_KEY_ID, userPrincipal.getId(),
@@ -64,22 +58,15 @@ public class JwtProvider {
             .getBody();
     }
 
-    private Date getExpiryDateBy(TokenType tokenType) {
-        if (TokenType.TEMPORARY.equals(tokenType)) {
-            return getExpiryDateFromNowWithMilli(authProperties.getAuth().getTemporaryTokenExpMilli());
-        } else if (TokenType.ACCESS_TOKEN.equals(tokenType)) {
-            return getExpiryDateFromNowWithMilli(authProperties.getAuth().getAccessTokenExpMilli());
-        }
-        return getExpiryDateFromNowWithMilli(authProperties.getAuth().getRefreshTokenExpMilli());
-    }
-
     private PrivateKey getPrivateKey() {
         PrivateKey key;
         try {
             key = RSAKeyUtil.getPrivateKey();
         }catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "RSA Key Error");
+            throw new BusinessException(
+                ErrorCode.INTERNAL_SERVER_ERROR,
+                String.format("RSA Key Error (%s)", e.getMessage())
+            );
         }
         return key;
     }
@@ -89,14 +76,13 @@ public class JwtProvider {
         try {
             key = RSAKeyUtil.getPublicKey();
         }catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "RSA Key Error");
+            throw new BusinessException(
+                ErrorCode.INTERNAL_SERVER_ERROR,
+                String.format("RSA Key Error (%s)", e.getMessage())
+            );
         }
         return key;
     }
 
-    private Date getExpiryDateFromNowWithMilli(long milli) {
-        return new Date(new Date().getTime() + milli);
-    }
 
 }

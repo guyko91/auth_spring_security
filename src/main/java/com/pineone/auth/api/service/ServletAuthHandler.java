@@ -72,12 +72,14 @@ public class ServletAuthHandler {
         setAccessTokenResponse(response, newAccessToken.token());
     }
 
-    public void validateLogoutRequest(HttpServletRequest request) {
+    public String validateLogoutRequest(HttpServletRequest request) {
 
         String refreshTokenString = getRefreshTokenStringFrom(request)
             .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED, "RefreshToken 이 존재 하지 않습니다."));
 
         tokenProvider.validateRefreshToken(refreshTokenString);
+
+        return refreshTokenString;
     }
 
     public void processLogout(HttpServletRequest request, HttpServletResponse response) {

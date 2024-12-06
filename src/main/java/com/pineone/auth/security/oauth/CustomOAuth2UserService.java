@@ -1,7 +1,7 @@
 package com.pineone.auth.security.oauth;
 
 import com.pineone.auth.api.model.User;
-import com.pineone.auth.api.repository.UserRepository;
+import com.pineone.auth.api.service.UserService;
 import com.pineone.auth.security.UserPrincipal;
 import com.pineone.auth.security.oauth.user.OAuth2UserInfo;
 import com.pineone.auth.security.oauth.user.OAuth2UserInfoFactory;
@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -42,7 +42,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         OAuth2Provider provider = extractProviderFrom(oAuth2UserRequest);
         OAuth2UserInfo oAuth2UserInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(provider, oAuth2User.getAttributes());
 
-        return getOrCreateUser(oAuth2UserInfo, provider);
+        return getOrCreateUser(oAuth2UserInfo);
     }
 
     private OAuth2Provider extractProviderFrom(OAuth2UserRequest oAuth2UserRequest) {
@@ -50,10 +50,10 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         return OAuth2Provider.valueOf(providerId.toUpperCase());
     }
 
-    private UserPrincipal getOrCreateUser(OAuth2UserInfo oauth2UserInfo, OAuth2Provider provider) {
-        User savedUser = userRepository.findById(oauth2UserInfo.getId())
+    private UserPrincipal getOrCreateUser(OAuth2UserInfo oauth2UserInfo) {
+        User savedUser = userService.getUserBy(oauth2UserInfo.getId())
             .map(this::updateUser)
-            .orElseGet(() -> createOAuthUser(oauth2UserInfo, provider));
+            .orElseGet(() -> userService.createUserWith(oauth2UserInfo));
 
         return UserPrincipal.create(savedUser, oauth2UserInfo.getAttributes());
     }
@@ -61,17 +61,6 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     private User updateUser(User user) {
         // TODO : 변경된 OAuth 사용자 정보로 업데이트 필요한 경우, 업데이트 로직 추가
         return user;
-    }
-
-    private User createOAuthUser(OAuth2UserInfo oAuth2UserInfo, OAuth2Provider provider) {
-        return userRepository.saveAndFlush(
-            User.createOAuth2(
-                oAuth2UserInfo.getId(),
-                oAuth2UserInfo.getName(),
-                oAuth2UserInfo.getEmail(),
-                provider.toAuthProvider()
-            )
-        );
     }
 
 }

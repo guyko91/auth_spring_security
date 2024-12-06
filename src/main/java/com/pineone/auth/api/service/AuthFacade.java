@@ -22,6 +22,7 @@ public class AuthFacade {
 
     private final UserService userService;
     private final UserTokenService userTokenService;
+    private final OTPService otpService;
 
     private final SecurityProvider securityProvider;
     private final TokenProvider tokenProvider;
@@ -52,7 +53,8 @@ public class AuthFacade {
 
     public RefreshResult refresh(String refreshToken) {
 
-        UserPrincipal userPrincipal = securityProvider.getCurrentUserPrincipal();
+        UserPrincipal userPrincipal = securityProvider.getCurrentUserPrincipal()
+            .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED));
 
         User user = userService.getUserBy(userPrincipal.getSeq())
             .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED_USER_NOT_FOUND));
@@ -65,10 +67,8 @@ public class AuthFacade {
         return RefreshResult.of(newAccessToken, user);
     }
 
-    public void logout() {
-        UserPrincipal userPrincipal = securityProvider.getCurrentUserPrincipal();
-
-        userTokenService.logoutUserToken(userPrincipal.getSeq());
+    public void logout(String refreshToken) {
+        userTokenService.logoutUserToken(refreshToken);
     }
 
 }
