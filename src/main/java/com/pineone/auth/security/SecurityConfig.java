@@ -1,7 +1,5 @@
 package com.pineone.auth.security;
 
-import static org.springframework.boot.autoconfigure.security.servlet.PathRequest.toStaticResources;
-
 import com.pineone.auth.api.service.ServletAuthHandler;
 import com.pineone.auth.security.oauth.CustomOAuth2UserService;
 import com.pineone.auth.security.oauth.OAuth2AuthenticationHandler;
@@ -23,7 +21,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -62,8 +59,11 @@ public class SecurityConfig {
             // 공통 설정 (CSRF, 세션 관리 등)
             .csrf(AbstractHttpConfigurer::disable)
             .cors(corsConfigurer -> corsConfigurer.configurationSource(corsConfigurationSource))
-            .formLogin(formLogin ->
-                formLogin.loginPage("login")
+            .formLogin(formLogin -> formLogin
+                .loginPage("/login")
+                .loginProcessingUrl("/login")
+                .defaultSuccessUrl("/success")
+                .permitAll()
             )
             .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
             .httpBasic(AbstractHttpConfigurer::disable)
@@ -71,25 +71,29 @@ public class SecurityConfig {
 
             // 리소스에 대한 보안 설정
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(toStaticResources().atCommonLocations()).permitAll()
-                // 필터를 적용하지 않을 패턴
-                .requestMatchers(FILTER_WHITELIST).permitAll()
-                // TODO 인증 없이 접근 가능한 URL 패턴 (회원가입, 로그인 등)
-                .requestMatchers(new AntPathRequestMatcher("/auth/login/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/auth/signup/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/oauth2/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/login")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/signup")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/error")).permitAll()
                 .anyRequest().authenticated()
+//                .requestMatchers(toStaticResources().atCommonLocations()).permitAll()
+//                // 필터를 적용하지 않을 패턴
+//                .requestMatchers(FILTER_WHITELIST).permitAll()
+//                // TODO 인증 없이 접근 가능한 URL 패턴 (회원가입, 로그인 등)
+//                .requestMatchers(new AntPathRequestMatcher("/auth/login/**")).permitAll()
+//                .requestMatchers(new AntPathRequestMatcher("/auth/signup/**")).permitAll()
+//                .requestMatchers(new AntPathRequestMatcher("/oauth2/**")).permitAll()
+//                .anyRequest().authenticated()
             )
 
             // 토큰 Filter 설정
-            .addFilterBefore(
-                configureAuthenticationFilter()
-                , UsernamePasswordAuthenticationFilter.class
-            )
-            .exceptionHandling(handler -> handler
-                .authenticationEntryPoint(tokenAuthenticationEntryPoint)
-                .accessDeniedHandler(tokenAccessDeniedHandler)
-            )
+//            .addFilterBefore(
+//                configureAuthenticationFilter()
+//                , UsernamePasswordAuthenticationFilter.class
+//            )
+//            .exceptionHandling(handler -> handler
+//                .authenticationEntryPoint(tokenAuthenticationEntryPoint)
+//                .accessDeniedHandler(tokenAccessDeniedHandler)
+//            )
 
             // OAuth2 Client 설정
             .oauth2Login(customConfigurer ->

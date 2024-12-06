@@ -5,7 +5,6 @@ import com.pineone.auth.api.controller.dto.LoginResponse;
 import com.pineone.auth.api.controller.dto.RefreshResponse;
 import com.pineone.auth.api.controller.dto.SignUpRequest;
 import com.pineone.auth.api.controller.dto.SignupResponse;
-import com.pineone.auth.api.controller.dto.VerifyOtpRequest;
 import com.pineone.auth.api.service.ServletAuthHandler;
 import com.pineone.auth.api.service.AuthFacade;
 import com.pineone.auth.api.controller.constant.ApiResult;
@@ -94,8 +93,7 @@ public class AuthController {
     @PostMapping("/verify-otp")
     public ResponseEntity<ApiResult<Void>> verifyOtp(
         HttpServletRequest servletRequest,
-        HttpServletResponse servletResponse,
-        @RequestBody @Valid VerifyOtpRequest verifyOtpRequest) {
+        HttpServletResponse servletResponse) {
 
         // TODO: Implement OTP verification logic
 
