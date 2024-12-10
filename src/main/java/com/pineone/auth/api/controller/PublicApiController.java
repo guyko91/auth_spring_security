@@ -12,7 +12,6 @@ import com.pineone.auth.api.service.dto.LoginResult;
 import com.pineone.auth.api.service.dto.SignUpResult;
 import com.pineone.auth.api.service.dto.SignupCommand;
 import com.pineone.auth.api.service.dto.TokenInfoResult;
-import com.pineone.auth.security.token.TokenPairDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -34,17 +33,16 @@ public class PublicApiController {
     public ResponseEntity<ApiResult<AuthResponse>> login(@RequestBody @Valid LoginRequest loginRequest) {
 
         LoginResult loginResult = authFacade.login(loginRequest.id(), loginRequest.password());
-        TokenPairDto tokenPair = loginResult.tokenPair();
 
         if (loginResult.isOtpRequired()) {
-            AuthResponse result = AuthResponse.otpRequired(tokenPair.tokenKey(), loginResult.otpRequire());
+            AuthResponse result = AuthResponse.otpRequired(loginResult.tokenUuid(), loginResult.otpRequire());
             return ResponseEntity.accepted()
                 .body(ApiResult.response(SuccessCode.ACCEPTED_OTP_REQUIRED, result));
         }
 
         return ResponseEntity.ok(
             ApiResult.ok(
-                AuthResponse.otpNotRequired(tokenPair.tokenKey())
+                AuthResponse.otpNotRequired(loginResult.tokenUuid())
             )
         );
     }
@@ -54,9 +52,8 @@ public class PublicApiController {
 
         SignupCommand signupCommand = signUpRequest.toSignupCommand();
         SignUpResult signupResult = authFacade.signUp(signupCommand);
-        TokenPairDto tokenPair = signupResult.tokenPair();
 
-        AuthResponse result = AuthResponse.otpRequired(tokenPair.tokenKey(), signupResult.otpRequire());
+        AuthResponse result = AuthResponse.otpRequired(signupResult.tokenUuid(), signupResult.otpRequire());
         return ResponseEntity.accepted()
             .body(ApiResult.response(SuccessCode.ACCEPTED_OTP_REQUIRED, result));
     }

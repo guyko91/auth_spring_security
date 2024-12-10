@@ -7,7 +7,6 @@ import com.pineone.auth.security.UserPrincipal;
 import com.pineone.auth.security.token.jwt.JwtProvider;
 import io.jsonwebtoken.Claims;
 import java.util.Date;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -21,14 +20,9 @@ public class TokenProvider {
     private static final int ACCESS_TOKEN_EX_BUFFER_SEC = 30;
 
     public TokenPairDto createTokenPair(UserPrincipal userPrincipal) {
-        String tokenKey = createNewTokenKey();
         TokenDto accessToken = createNewAccessToken(userPrincipal);
         TokenDto refreshToken = createNewRefreshToken(userPrincipal);
-        return new TokenPairDto(tokenKey, accessToken, refreshToken);
-    }
-
-    private String createNewTokenKey() {
-        return UUID.randomUUID().toString();
+        return new TokenPairDto(accessToken, refreshToken);
     }
 
     public TokenDto createNewAccessToken(UserPrincipal userPrincipal) {

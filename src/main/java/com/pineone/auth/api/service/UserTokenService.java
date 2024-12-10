@@ -4,9 +4,10 @@ import com.pineone.auth.api.model.UserAuthToken;
 import com.pineone.auth.api.model.UserToken;
 import com.pineone.auth.api.repository.AuthTokenRepository;
 import com.pineone.auth.api.repository.UserTokenRepository;
-import com.pineone.auth.api.service.dto.AuthCommand;
+import com.pineone.auth.api.service.dto.AuthTokenCreateCommand;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,13 +21,14 @@ public class UserTokenService {
     private final AuthTokenRepository authTokenRepository;
 
     @Transactional
-    public void saveAuthToken(AuthCommand authCommand) {
-        saveAuthTokenPair(authCommand.userSeq(), authCommand.tokenKey(), authCommand.accessToken(), authCommand.refreshToken());
-        saveUserRefreshToken(authCommand.userSeq(), authCommand.refreshToken(), authCommand.refreshTokenExpireDateTime());
+    public String saveAuthToken(AuthTokenCreateCommand command) {
+        String tokenUuid = saveAuthTokenPair(command.userSeq(), command.accessToken(), command.refreshToken());
+        saveUserRefreshToken(command.userSeq(), command.refreshToken(), command.refreshTokenExpireDateTime());
+        return tokenUuid;
     }
 
-    public Optional<UserAuthToken> findAuthTokenWith(String tokenKey) {
-        return authTokenRepository.findByUuid(tokenKey);
+    public Optional<UserAuthToken> findAuthTokenWith(String tokenUuid) {
+        return authTokenRepository.findById(tokenUuid);
     }
 
     @Transactional
@@ -45,9 +47,11 @@ public class UserTokenService {
         return userTokenRepository.findByRefreshToken(refreshToken);
     }
 
-    private void saveAuthTokenPair(long userSeq, String tokenKey, String accessToken, String refreshToken) {
-        UserAuthToken userAuthToken = UserAuthToken.create(userSeq, tokenKey, accessToken, refreshToken);
+    private String saveAuthTokenPair(long userSeq, String accessToken, String refreshToken) {
+        String tokenUuid = UUID.randomUUID().toString();
+        UserAuthToken userAuthToken = UserAuthToken.create(tokenUuid, userSeq, accessToken, refreshToken);
         authTokenRepository.save(userAuthToken);
+        return tokenUuid;
     }
 
     private void saveUserRefreshToken(long userSeq, String refreshToken, LocalDateTime expireDateTime) {

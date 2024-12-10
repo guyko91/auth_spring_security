@@ -4,7 +4,7 @@ import com.pineone.auth.api.controller.constant.ErrorCode;
 import com.pineone.auth.api.controller.exception.BusinessException;
 import com.pineone.auth.api.model.User;
 import com.pineone.auth.api.model.UserAuthToken;
-import com.pineone.auth.api.service.dto.AuthCommand;
+import com.pineone.auth.api.service.dto.AuthTokenCreateCommand;
 import com.pineone.auth.api.service.dto.LoginResult;
 import com.pineone.auth.api.service.dto.OtpRequiredResult;
 import com.pineone.auth.api.service.dto.RefreshResult;
@@ -36,10 +36,11 @@ public class AuthFacade {
         UserPrincipal userPrincipal = securityProvider.authenticateIdPwd(id, password);
         User user = findUserWith(userPrincipal.getSeq());
 
+        TokenPairDto tokenPair = tokenProvider.createTokenPair(userPrincipal);
+        String tokenUuid = createAndGetAuthTokenUuid(userPrincipal.getSeq(), tokenPair);
         OtpRequiredResult otpResult = userOtpService.isUserOtpVerifyRequired(userPrincipal.getSeq());
-        TokenPairDto tokenPair = createAndSaveAuthTokenPair(userPrincipal);
 
-        return LoginResult.of(tokenPair, user, otpResult);
+        return LoginResult.of(tokenUuid, user, otpResult);
     }
 
     public SignUpResult signUp(SignupCommand command) {
@@ -48,14 +49,15 @@ public class AuthFacade {
         User user = userService.createUserWith(command.id(), command.password(), command.name());
         UserPrincipal userPrincipal = securityProvider.authenticateIdPwd(command.id(), command.password());
 
+        TokenPairDto tokenPair = tokenProvider.createTokenPair(userPrincipal);
+        String tokenUuid = createAndGetAuthTokenUuid(userPrincipal.getSeq(), tokenPair);
         OtpRequiredResult otpResult = userOtpService.createEncodedOtpSecret(userPrincipal.getSeq());
-        TokenPairDto tokenPair = createAndSaveAuthTokenPair(userPrincipal);
 
-        return SignUpResult.of(tokenPair, user, otpResult);
+        return SignUpResult.of(user, tokenUuid, otpResult);
     }
 
-    public TokenInfoResult getTokenPair(String tokenKey) {
-        UserAuthToken userAuthToken = findUserAuthTokenBy(tokenKey);
+    public TokenInfoResult getTokenPair(String tokenUuid) {
+        UserAuthToken userAuthToken = findUserAuthTokenBy(tokenUuid);
         return new TokenInfoResult(userAuthToken.getAccessToken(), userAuthToken.getRefreshToken());
     }
 
@@ -88,10 +90,9 @@ public class AuthFacade {
         userTokenService.logoutUserToken(refreshToken);
     }
 
-    private TokenPairDto createAndSaveAuthTokenPair(UserPrincipal userPrincipal) {
-        TokenPairDto tokenPair = tokenProvider.createTokenPair(userPrincipal);
-        saveAuthToken(userPrincipal, tokenPair);
-        return tokenPair;
+    private String createAndGetAuthTokenUuid(long userSeq, TokenPairDto tokenPair) {
+        AuthTokenCreateCommand command = AuthTokenCreateCommand.of(userSeq, tokenPair);
+        return userTokenService.saveAuthToken(command);
     }
 
     private User findUserWith(long userSeq) {
@@ -99,13 +100,8 @@ public class AuthFacade {
             .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED_USER_NOT_FOUND));
     }
 
-    private void saveAuthToken(UserPrincipal userPrincipal, TokenPairDto tokenPair) {
-        AuthCommand authCommand = AuthCommand.of(userPrincipal.getSeq(), tokenPair);
-        userTokenService.saveAuthToken(authCommand);
-    }
-
-    private UserAuthToken findUserAuthTokenBy(String tokenKey) {
-        return userTokenService.findAuthTokenWith(tokenKey)
+    private UserAuthToken findUserAuthTokenBy(String tokenUuid) {
+        return userTokenService.findAuthTokenWith(tokenUuid)
             .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
     }
 

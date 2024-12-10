@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pineone.auth.api.controller.constant.ApiResult;
 import com.pineone.auth.api.controller.constant.ErrorCode;
 import com.pineone.auth.config.AuthProperties;
-import com.pineone.auth.security.token.TokenPairDto;
 import com.pineone.auth.security.token.TokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,9 +28,9 @@ public class ServletAuthHandler {
     private final String TOKEN_PREFIX = "Bearer ";
     private final String AUTH_REFRESH_TOKEN_COOKIE_KEY = "refreshToken";
 
-    public void processOAuthTokenResponse(HttpServletResponse response, TokenPairDto tokenPair)
+    public void processOAuthTokenResponse(HttpServletResponse response, String tokenUuid)
         throws IOException {
-        setRedirectResponse(response, tokenPair.tokenKey());
+        setRedirectResponse(response, tokenUuid);
     }
 
     public void writeErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
@@ -55,14 +54,14 @@ public class ServletAuthHandler {
         return authorizationHeader.substring(TOKEN_PREFIX.length()).trim();
     }
 
-    private void setRedirectResponse(HttpServletResponse response, String tokenKey) throws IOException {
+    private void setRedirectResponse(HttpServletResponse response, String tokenUuid) throws IOException {
         String successRedirectUri = authProperties.getOauth2().getLoginSuccessRedirectUri();
         String tokenKeyQueryParamName = authProperties.getOauth2().getLoginSuccessTokenQueryParam();
 
         response.sendRedirect(
             UriComponentsBuilder
                 .fromUriString(successRedirectUri)
-                .queryParam(tokenKeyQueryParamName, tokenKey)
+                .queryParam(tokenKeyQueryParamName, tokenUuid)
                 .build().toUriString()
         );
     }

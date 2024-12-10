@@ -3,18 +3,16 @@ package com.pineone.auth.api.service.dto;
 import com.pineone.auth.security.token.TokenPairDto;
 import java.time.LocalDateTime;
 
-public record AuthCommand(
+public record AuthTokenCreateCommand(
     long userSeq,
-    String tokenKey,
     String accessToken,
     LocalDateTime accessTokenExpireDateTime,
     String refreshToken,
     LocalDateTime refreshTokenExpireDateTime
 ) {
-    public static AuthCommand of(long userSeq, TokenPairDto tokenPair) {
-        return new AuthCommand(
+    public static AuthTokenCreateCommand of(long userSeq, TokenPairDto tokenPair) {
+        return new AuthTokenCreateCommand(
             userSeq,
-            tokenPair.tokenKey(),
             tokenPair.accessToken().token(),
             tokenPair.accessToken().expireDateTime(),
             tokenPair.refreshToken().token(),

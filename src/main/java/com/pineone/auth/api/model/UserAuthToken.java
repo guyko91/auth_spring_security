@@ -5,26 +5,25 @@ import lombok.Getter;
 import org.springframework.data.redis.core.RedisHash;
 
 @Getter
-@RedisHash(value = "user_auth_tokens", timeToLive = 60)
+@RedisHash(value = "user_auth_tokens", timeToLive = 30)
 public class UserAuthToken {
 
     @Id
     private String id;
     private long userSeq;
-    private String uuid;
     private String accessToken;
     private String refreshToken;
 
     protected UserAuthToken() { }
 
-    private UserAuthToken(long userSeq, String uuid, String accessToken, String refreshToken) {
-        this.uuid = uuid;
+    private UserAuthToken(String id, long userSeq, String accessToken, String refreshToken) {
+        this.id = id;
         this.userSeq = userSeq;
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
     }
 
-    public static UserAuthToken create(long userSeq, String uuid, String accessToken, String refreshToken) {
-        return new UserAuthToken(userSeq, uuid, accessToken, refreshToken);
+    public static UserAuthToken create(String id, long userSeq, String accessToken, String refreshToken) {
+        return new UserAuthToken(id, userSeq, accessToken, refreshToken);
     }
 }
