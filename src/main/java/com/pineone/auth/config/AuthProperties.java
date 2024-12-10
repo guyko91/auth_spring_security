@@ -1,7 +1,5 @@
 package com.pineone.auth.config;
 
-import java.util.ArrayList;
-import java.util.List;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
@@ -18,6 +16,9 @@ public class AuthProperties {
     @NestedConfigurationProperty
     private final OAuth2 oauth2 = new OAuth2();
 
+    @NestedConfigurationProperty
+    private final Otp otp = new Otp();
+
     @Data
     public static class Auth {
         private long temporaryTokenExpMilli;
@@ -31,7 +32,12 @@ public class AuthProperties {
     public static class OAuth2 {
         private String loginSuccessRedirectUri;
         private String loginSuccessTokenQueryParam;
-        private List<String> authorizedRedirectUris = new ArrayList<>();
+    }
+
+    @Data
+    public static class Otp {
+        private String issuerName;
+        private int verifyExpDays;
     }
 
 }

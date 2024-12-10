@@ -1,10 +1,11 @@
 package com.pineone.auth.security;
 
+import static org.springframework.boot.autoconfigure.security.servlet.PathRequest.toStaticResources;
+
 import com.pineone.auth.api.service.ServletAuthHandler;
 import com.pineone.auth.security.oauth.CustomOAuth2UserService;
 import com.pineone.auth.security.oauth.OAuth2AuthenticationHandler;
 import com.pineone.auth.security.token.TokenProvider;
-import com.pineone.auth.security.token.jwt.JwtAuthenticationFilter;
 import com.pineone.auth.security.token.jwt.TokenAccessDeniedHandler;
 import com.pineone.auth.security.token.jwt.TokenAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +22,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.filter.OncePerRequestFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -35,65 +36,52 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
     private final CustomOAuth2UserService customOAuth2UserService;
 
+    private final TokenProvider tokenProvider;
+    private final TokenAuthenticationEntryPoint tokenAuthenticationEntryPoint;
+    private final TokenAccessDeniedHandler tokenAccessDeniedHandler;
+
     private final OAuth2AuthenticationHandler oAuth2AuthenticationHandler;
 
     private final ServletAuthHandler servletAuthHandler;
     private final SecurityProvider securityProvider;
 
-    private final TokenProvider tokenProvider;
-    private final TokenAuthenticationEntryPoint tokenAuthenticationEntryPoint;
-    private final TokenAccessDeniedHandler tokenAccessDeniedHandler;
-
     private static final String[] FILTER_WHITELIST = {
         "/h2-console/**",
         "/error",
         "/health",
-        "/auth/login/**",
-        "/auth/signup/**",
-        "/auth/logout/**"
+        "/public/**"
     };
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+        CustomAuthenticationFilter customAuthFilter = new CustomAuthenticationFilter(
+            servletAuthHandler, securityProvider, tokenProvider, FILTER_WHITELIST);
+
         http
             // 공통 설정 (CSRF, 세션 관리 등)
             .csrf(AbstractHttpConfigurer::disable)
             .cors(corsConfigurer -> corsConfigurer.configurationSource(corsConfigurationSource))
-            .formLogin(formLogin -> formLogin
-                .loginPage("/login")
-                .loginProcessingUrl("/login")
-                .defaultSuccessUrl("/success")
-                .permitAll()
-            )
+            .formLogin(AbstractHttpConfigurer::disable)
             .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
             .httpBasic(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-            // 리소스에 대한 보안 설정
+            // 리소스에 대한 보안 설정 (SecurityContext 없이 접근 가능한 리소스)
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(new AntPathRequestMatcher("/login")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/signup")).permitAll()
+                .requestMatchers(toStaticResources().atCommonLocations()).permitAll()
+                .requestMatchers(FILTER_WHITELIST).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/public/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/error")).permitAll()
                 .anyRequest().authenticated()
-//                .requestMatchers(toStaticResources().atCommonLocations()).permitAll()
-//                // 필터를 적용하지 않을 패턴
-//                .requestMatchers(FILTER_WHITELIST).permitAll()
-//                // TODO 인증 없이 접근 가능한 URL 패턴 (회원가입, 로그인 등)
-//                .requestMatchers(new AntPathRequestMatcher("/auth/login/**")).permitAll()
-//                .requestMatchers(new AntPathRequestMatcher("/auth/signup/**")).permitAll()
-//                .requestMatchers(new AntPathRequestMatcher("/oauth2/**")).permitAll()
-//                .anyRequest().authenticated()
             )
 
-            // 토큰 Filter 설정
-//            .addFilterBefore(
-//                configureAuthenticationFilter()
-//                , UsernamePasswordAuthenticationFilter.class
-//            )
-//            .exceptionHandling(handler -> handler
-//                .authenticationEntryPoint(tokenAuthenticationEntryPoint)
-//                .accessDeniedHandler(tokenAccessDeniedHandler)
-//            )
+            // 토큰 Filter 설정 (api/** 경로에 대한 인증 필터)
+            .addFilterBefore(customAuthFilter, UsernamePasswordAuthenticationFilter.class)
+            .exceptionHandling(handler -> handler
+                .authenticationEntryPoint(tokenAuthenticationEntryPoint)
+                .accessDeniedHandler(tokenAccessDeniedHandler)
+            )
 
             // OAuth2 Client 설정
             .oauth2Login(customConfigurer ->
@@ -136,16 +124,6 @@ public class SecurityConfig {
         // 존재하지 않는 사용자 에러를 별도로 처리 (기본값 true : BadCredentialsException)
         daoAuthenticationProvider.setHideUserNotFoundExceptions(false);
         return daoAuthenticationProvider;
-    }
-
-    private OncePerRequestFilter configureAuthenticationFilter() {
-        // 인증에 사용할 필터를 명시적으로 생성하여 반환
-        return new JwtAuthenticationFilter(
-            servletAuthHandler,
-            tokenProvider,
-            securityProvider,
-            FILTER_WHITELIST
-        );
     }
 
 }

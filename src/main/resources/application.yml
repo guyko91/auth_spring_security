@@ -1,4 +1,13 @@
 spring:
+  application:
+    name: SSO Server
+
+  thymeleaf:
+    cache: false
+    check-template-location: true
+    prefix: classpath:/templates/
+    suffix: .html
+
   security:
     oauth2:
       client:
@@ -96,10 +105,5 @@ prop:
   oauth2:
     loginSuccessRedirectUri: http://localhost:8080/success
     loginSuccessTokenQueryParam: accessToken
-    authorizedRedirectUris:
-      - http://localhost:3000/oauth2/redirect
-      - myandroidapp://oauth2/redirect
-      - myiosapp://oauth2/redirect
-
-otp:
-  serviceName: "Auth Server"
+  otp:
+    issuerName: "Auth Server"

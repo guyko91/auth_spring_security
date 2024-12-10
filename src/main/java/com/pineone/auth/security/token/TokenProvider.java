@@ -7,6 +7,7 @@ import com.pineone.auth.security.UserPrincipal;
 import com.pineone.auth.security.token.jwt.JwtProvider;
 import io.jsonwebtoken.Claims;
 import java.util.Date;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -20,14 +21,24 @@ public class TokenProvider {
     private static final int ACCESS_TOKEN_EX_BUFFER_SEC = 30;
 
     public TokenPairDto createTokenPair(UserPrincipal userPrincipal) {
+        String tokenKey = createNewTokenKey();
         TokenDto accessToken = createNewAccessToken(userPrincipal);
         TokenDto refreshToken = createNewRefreshToken(userPrincipal);
-        return new TokenPairDto(accessToken, refreshToken);
+        return new TokenPairDto(tokenKey, accessToken, refreshToken);
+    }
+
+    private String createNewTokenKey() {
+        return UUID.randomUUID().toString();
     }
 
     public TokenDto createNewAccessToken(UserPrincipal userPrincipal) {
         Date expiryDate = getExpiryDateBy(TokenType.ACCESS_TOKEN);
         return jwtProvider.createToken(userPrincipal, TokenType.ACCESS_TOKEN, expiryDate);
+    }
+
+    private TokenDto createNewRefreshToken(UserPrincipal userPrincipal) {
+        Date expiryDate = getExpiryDateBy(TokenType.REFRESH_TOKEN);
+        return jwtProvider.createToken(userPrincipal, TokenType.REFRESH_TOKEN, expiryDate);
     }
 
     public void validateRefreshAccessToken(String tokenString) {
@@ -61,11 +72,6 @@ public class TokenProvider {
         String name = claims.get(JwtProvider.JWT_CLAIM_KEY_NAME, String.class);
 
         return UserPrincipal.of(seq, id, name);
-    }
-
-    private TokenDto createNewRefreshToken(UserPrincipal userPrincipal) {
-        Date expiryDate = getExpiryDateBy(TokenType.REFRESH_TOKEN);
-        return jwtProvider.createToken(userPrincipal, TokenType.REFRESH_TOKEN, expiryDate);
     }
 
     private Date getExpiryDateBy(TokenType tokenType) {

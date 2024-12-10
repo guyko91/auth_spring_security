@@ -1,66 +1,40 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title>Login Success</title>
+  <title>Success</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f5f5f5;
+    }
+
+    .message-container {
       text-align: center;
-    }
-    .success-container {
-      background-color: #f0f0f0;
-      border-radius: 10px;
-      padding: 30px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    .welcome-message {
-      color: #2c3e50;
-      margin-bottom: 20px;
-    }
-    .user-info {
-      background-color: #fff;
-      border-radius: 5px;
-      padding: 15px;
-      margin-bottom: 20px;
-    }
-    .logout-btn {
-      background-color: #3498db;
+      background-color: #4CAF50;
       color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    .logout-btn:hover {
-      background-color: #2980b9;
+      border-radius: 8px;
+      padding: 15px 30px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      font-size: 18px;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-<div class="success-container">
-  <h1 class="welcome-message">Login Successful!</h1>
-
-  <div class="user-info">
-    <h2>사용자 정보</h2>
-    <p><strong>사용자명:</strong> <span th:text="${username}">username</span></p>
-
-    <h3>권한</h3>
-    <ul>
-      <li th:each="authority : ${authorities}"
-          th:text="${authority.authority}">
-        권한
-      </li>
-    </ul>
-  </div>
-
-  <form th:action="@{/logout}" method="post">
-    <button type="submit" class="logout-btn">로그아웃</button>
-  </form>
+<div class="message-container">
+  인증이 완료되었습니다!
 </div>
+
+<script type="text/javascript">
+  window.onload = function() {
+    // get tokenKey from querystring
+    const tokenKey = location.search.split('tokenKey=')[1];
+    alert('OAuth 로그인/회원가입 완료 ! (' + tokenKey + ')');
+  };
+</script>
 </body>
-</html>

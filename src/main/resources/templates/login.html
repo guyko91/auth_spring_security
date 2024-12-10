@@ -5,17 +5,6 @@
   <title>Spring Security OAuth</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    /* 배경 비디오 스타일 */
-    .background-video {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover; /* 비디오가 화면을 꽉 채우도록 설정 */
-      z-index: -1; /* 배경에 비디오가 위치하도록 설정 */
-    }
-
     /* 로그인 페이지 스타일 */
     .login-page {
       position: relative;
@@ -55,6 +44,7 @@
       font-size: 16px;
     }
 
+    /* 로그인 버튼 스타일 */
     .login-btn {
       width: 100%;
       padding: 12px;
@@ -64,6 +54,10 @@
       font-size: 16px;
       border-radius: 4px;
       cursor: pointer;
+    }
+
+    .login-btn:hover {
+      background-color: #2b2827; /* hover 시 약간 더 어두운 색상 */
     }
 
     /* 회원가입 버튼 및 텍스트 스타일 */
@@ -86,6 +80,10 @@
       font-size: 16px;
       border-radius: 4px;
       cursor: pointer;
+    }
+
+    .signup-btn:hover {
+      background-color: #8e8b8a; /* hover 시 약간 더 어두운 색상 */
     }
 
     /* SNS 로그인 버튼 스타일 */
@@ -117,7 +115,7 @@
     }
 
     .google:hover {
-      background-color: #c1351d;
+      background-color: #c1351d; /* hover 시 약간 더 어두운 색상 */
     }
 
     .facebook {
@@ -126,7 +124,7 @@
     }
 
     .facebook:hover {
-      background-color: #2d4373;
+      background-color: #2d4373; /* hover 시 약간 더 어두운 색상 */
     }
 
     .kakao {
@@ -135,7 +133,7 @@
     }
 
     .kakao:hover {
-      background-color: #f7d500;
+      background-color: #f7d500; /* hover 시 약간 더 어두운 색상 */
     }
 
     .naver {
@@ -144,142 +142,84 @@
     }
 
     .naver:hover {
-      background-color: #029a47;
-    }
-
-    /* 모달 스타일 */
-    .modal {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      z-index: 1000;
-    }
-
-    .modal-content {
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      text-align: center;
-      width: 100%;
-      max-width: 400px;
-    }
-
-    .modal-content .close {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      font-size: 24px;
-      cursor: pointer;
+      background-color: #029a47; /* hover 시 약간 더 어두운 색상 */
     }
   </style>
 </head>
 <body>
 <div class="login-page">
-  <!-- 배경 비디오 -->
-  <video autoplay loop muted class="background-video">
-    <source src="path/to/login-background.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
 
   <div class="login-container">
-    <h1>Spring Security OAuth</h1>
+    <h1 th:text="${serviceName}"></h1>
     <p class="description">서비스에 로그인하여 더 많은 기능을 이용하세요.</p>
 
     <!-- 아이디 / 비밀번호 로그인 폼 -->
     <div class="login-form">
-      <input type="text" th:value="${id}" placeholder="아이디"/>
-      <input type="password" th:value="${password}" placeholder="비밀번호"/>
-      <button class="login-btn" th:onclick="|loginWithCredentials('${id}', '${password}')|">로그인</button>
+      <input type="text" id="id" placeholder="아이디"/>
+      <input type="password" id="password" placeholder="비밀번호"/>
+      <button class="login-btn" onclick="loginWithCredentials()">로그인</button>
     </div>
 
     <p class="signup-prompt">아직 회원이 아니신가요?</p>
     <!-- 회원가입 버튼 -->
     <div class="buttons-container">
-      <button class="signup-btn" onclick="showSignupModal()">회원가입</button>
+      <button class="signup-btn" onclick="goSignup()">회원가입</button>
     </div>
 
     <!-- SNS 로그인 버튼 -->
     <div class="sns-buttons">
-      <button class="google" onclick="OAuthLogin('/auth/google')">
-        <i class="fab fa-google"></i> Google 로그인
+      <button th:each="provider : ${oAuthProviderList}"
+              th:text="${provider.description}"
+              th:class="${provider.registrationId}"
+              th:data-login-uri="${provider.loginUri}"
+              onclick="OAuthLogin(this.dataset.loginUri)">
       </button>
-      <button class="facebook" onclick="OAuthLogin('/auth/facebook')">
-        <i class="fab fa-facebook-f"></i> Facebook 로그인
-      </button>
-      <button class="kakao" onclick="OAuthLogin('/auth/kakao')">
-        <i class="fas fa-comment"></i> Kakao 로그인
-      </button>
-      <button class="naver" onclick="OAuthLogin('/auth/naver')">
-        <i class="fas fa-leaf"></i> Naver 로그인
-      </button>
-    </div>
-
-    <!-- 회원가입 모달 -->
-    <div id="signupModal" class="modal" style="display: none;">
-      <div class="modal-content">
-        <span class="close" onclick="hideSignupModal()">&times;</span>
-        <h2>회원가입</h2>
-        <form onsubmit="signup(event)">
-          <div>
-            <input type="text" id="signupUsername" placeholder="ID" required>
-          </div>
-          <div>
-            <input type="password" id="signupPassword" placeholder="PWD" required>
-          </div>
-          <div>
-            <input type="password" id="signupPasswordConfirm" placeholder="PWD 확인" required>
-          </div>
-          <div>
-            <input type="text" id="signupName" placeholder="이름">
-          </div>
-          <div>
-            <input type="text" id="signupEmail" placeholder="이메일">
-          </div>
-          <button class="signup-btn" type="submit">회원가입</button>
-        </form>
-      </div>
     </div>
   </div>
 </div>
 
 <script>
-  function showSignupModal() {
-    document.getElementById("signupModal").style.display = "flex";
+  function goSignup() {
+    window.location.href = "/public/view/signup";
   }
 
-  function hideSignupModal() {
-    document.getElementById("signupModal").style.display = "none";
-  }
+  // 로그인 로직 구현
+  function loginWithCredentials() {
+    const id = document.getElementById('id').value;
+    const password = document.getElementById('password').value;
 
-  function loginWithCredentials(id, password) {
-    // 로그인 로직 구현
+    fetch('/public/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        id: id,
+        password: password
+      })
+    })
+    .then(response => {
+      if (!response.ok) {
+        // 응답 상태 코드가 200번대가 아니면 오류 처리
+        throw new Error('로그인 실패');
+      }
+      return response.json(); // JSON 형태로 응답 body를 파싱
+    })
+    .then(data => {
+      // 서버에서 반환한 데이터에서 토큰을 가져와 사용할 수 있습니다.
+      const tokenKey = data.data.tokenKey;
+
+      alert('로그인 성공! (토큰: ' + tokenKey + ')');
+      window.opener.postMessage({tokenKey: tokenKey,}, "*");
+    })
+    .catch(error => {
+      console.error('로그인 요청 중 오류 발생:', error);
+      alert(error.message || '로그인 중 오류가 발생했습니다. 다시 시도해 주세요.');
+    });
   }
 
   function OAuthLogin(url) {
     window.location.href = url;
-  }
-
-  function signup(event) {
-    event.preventDefault();
-    var username = document.getElementById("signupUsername").value;
-    var password = document.getElementById("signupPassword").value;
-    var passwordConfirm = document.getElementById("signupPasswordConfirm").value;
-    var name = document.getElementById("signupName").value;
-    var email = document.getElementById("signupEmail").value;
-
-    if (password !== passwordConfirm) {
-      alert("비밀번호가 일치하지 않습니다.");
-      return;
-    }
-
-    // 회원가입 로직 구현
   }
 </script>
 </body>

@@ -13,7 +13,7 @@ class OTPServiceTest {
 
 
     @InjectMocks
-    private OTPService otpService;
+    private UserOtpService userOtpService;
 
     @BeforeEach
     void setUp() {
@@ -22,15 +22,15 @@ class OTPServiceTest {
 
     @Test
     void testGetSecretKey() {
-        String secretKey = otpService.getSecretKey();
+        String secretKey = userOtpService.getSecretKey();
         assertNotNull(secretKey);
         assertEquals(32, secretKey.length()); // Base32 인코딩된 20 바이트는 32 문자 길이입니다.
     }
 
     @Test
     void testGetTOTPCode() {
-        String secretKey = otpService.getSecretKey();
-        String totpCode = otpService.getTOTPCode(secretKey);
+        String secretKey = userOtpService.getSecretKey();
+        String totpCode = userOtpService.getTOTPCode(secretKey);
         assertNotNull(totpCode);
         assertEquals(6, totpCode.length()); // 일반적인 TOTP 코드 길이는 6자리입니다.
     }
@@ -41,7 +41,7 @@ class OTPServiceTest {
         int height = 200;
         int width = 200;
 
-        String qrImageBase64 = otpService.getQRImageBase64(googleOTPAuthURL, height, width);
+        String qrImageBase64 = userOtpService.getQRImageBase64(googleOTPAuthURL, height, width);
 
         System.out.println("qrImageBase64 = " + qrImageBase64);
 

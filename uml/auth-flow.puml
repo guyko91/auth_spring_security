@@ -1,0 +1,67 @@
+@startuml
+title 인증 서버 시퀀스 다이어그램
+
+'---------------------------------------------------
+' 객체 정의
+'---------------------------------------------------
+participant "User (Resource Owner)"     as USER
+participant "Client"                    as CLIENT  #lightyellow
+participant "Auth Server (Front)"       as SERVERF #lightblue
+participant "Auth Server (Back)"        as SERVERB #lightpink
+participant "Database (RDB)"            as DB      #gray
+participant "Database (Redis)"          as REDIS   #lightgreen
+participant "Service Server (Back)"     as SERVERS #lavender
+
+'---------------------------------------------------
+' OAuth 2.0 Authorization Flow
+'---------------------------------------------------
+ACTIVATE USER
+USER -> CLIENT : 1. 로그인 및 회원가입 페이지 진입
+
+'group Automated by Spring Security OAuth Client
+  ACTIVATE CLIENT #lightyellow
+  CLIENT -> SERVERB : 2. ${AUTH_SERVER}/login 요청
+
+  ACTIVATE SERVERB #lightpink
+  SERVERB --> SERVERF : 3. 로그인/회원가입 화면 응답
+  ACTIVATE SERVERF #lightblue
+  SERVERF -> SERVERB : 4. ID/PWD 및 SNS 로그인/회원가입 정보 전달
+
+  SERVERB -> SERVERB : 5. 로그인/회원가입 로직 처리
+  note right of SERVERB
+    - JWT 액세스 토큰쌍 생성 (access token, refresh token) 및 토큰 KEY 생성
+    - 토큰 KEY 는 UUID 형식으로 생성 (TTL 매우 짧게 설정)
+  end note
+  SERVERB -> DB : 6. 사용자 정보 저장
+  ACTIVATE DB #gray
+  DB --> SERVERB : 7. 사용자 정보 저장 응답
+  DEACTIVATE DB
+
+  SERVERB -> REDIS : 7. 토큰 정보 저장
+  ACTIVATE REDIS #lightgreen
+  REDIS --> SERVERB : 8. 토큰 정보 저장 응답
+  DEACTIVATE REDIS
+
+  SERVERB --> SERVERF : 9. 로그인/회원가입 완료 응답 (토큰 KEY 전달)
+
+  SERVERF --> CLIENT : 10. 토큰 KEY 전달 (postMessage)
+  DEACTIVATE SERVERF
+
+  CLIENT -> SERVERB : 11. 토큰 KEY로 토큰 정보 조회 요청
+  SERVERB -> REDIS : 12. 토큰 정보 조회 (KEY 검증)
+  ACTIVATE REDIS #lightgreen
+  REDIS --> SERVERB : 13. 토큰 정보 응답
+  DEACTIVATE REDIS
+
+  SERVERB --> CLIENT : 14. 토큰 정보 응답
+  DEACTIVATE SERVERB
+  CLIENT -> CLIENT : 15. 토큰 정보 저장 및 로그인 완료 처리
+  CLIENT -> SERVERS : 16. 토큰 정보활용 서비스 API 서버 요청
+  ACTIVATE SERVERS #lavender
+  SERVERS -> SERVERS : 17. 토큰 정보 검증 (JWT Filter)
+  SERVERS --> CLIENT : 18. API 자원 응답
+  DEACTIVATE SERVERS
+  CLIENT --> USER : 19. 응답
+  DEACTIVATE CLIENT
+
+@enduml

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pineone.auth.api.controller.constant.ErrorCode;
 import com.pineone.auth.api.service.ServletAuthHandler;
 import com.pineone.auth.api.service.UserTokenService;
+import com.pineone.auth.api.service.dto.AuthCommand;
 import com.pineone.auth.config.AuthProperties;
 import com.pineone.auth.security.UserPrincipal;
 import com.pineone.auth.security.token.TokenPairDto;
@@ -35,18 +36,18 @@ public class OAuth2AuthenticationHandler implements AuthenticationSuccessHandler
      * @param response
      * @param authentication
      * @throws IOException
-     * @throws ServletException
      */
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-        Authentication authentication) throws IOException, ServletException {
+        Authentication authentication) throws IOException {
 
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         TokenPairDto tokenPairDto = tokenProvider.createTokenPair(userPrincipal);
 
-        userTokenService.saveOrUpdateRefreshToken(userPrincipal.getSeq(), tokenPairDto.refreshToken());
+        AuthCommand authCommand = AuthCommand.of(userPrincipal.getSeq(), tokenPairDto);
+        userTokenService.saveAuthToken(authCommand);
 
-        servletAuthHandler.processTokenRedirectResponse(request, response, tokenPairDto);
+        servletAuthHandler.processOAuthTokenResponse(response, tokenPairDto);
     }
 
     /**

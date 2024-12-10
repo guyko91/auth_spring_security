@@ -4,7 +4,7 @@ import jakarta.persistence.Id;
 import java.time.LocalDateTime;
 import org.springframework.data.redis.core.RedisHash;
 
-@RedisHash("UserToken")
+@RedisHash("user_tokens")
 public class UserToken {
 
     @Id

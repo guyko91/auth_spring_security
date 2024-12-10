@@ -25,6 +25,8 @@ public enum ErrorCode implements ResponseCode{
     // 400 Bad Request
     // ===============================================================================================================
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "40000000", "잘못된 요청"),
+    BAD_REQUEST_INVALID_PARAMETER(HttpStatus.BAD_REQUEST, "40001000", "잘못된 파라미터"),
+    BAD_REQUEST_INVALID_PARAMETER_OTP_CODE(HttpStatus.BAD_REQUEST, "40001001", "OTP 코드가 유효하지 않음"),
 
     // ===============================================================================================================
     // 401 Unauthorized
@@ -41,6 +43,8 @@ public enum ErrorCode implements ResponseCode{
     UNAUTHORIZED_REFRESH_TOKEN_ERROR(HttpStatus.UNAUTHORIZED, "40101201", "리프레시 토큰이 만료되었거나 유효하지 않음"),
     UNAUTHORIZED_REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "40101202", "리프레시 토큰 만료"),
     UNAUTHORIZED_REFRESH_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "40101203", "리프레시 토큰이 유효하지 않음"),
+
+    UNAUTHORIZED_OTP_REQUIRED(HttpStatus.UNAUTHORIZED, "40101300", "추가 OTP 인증이 필요합니다"),
 
     // ===============================================================================================================
     // 403 Forbidden
