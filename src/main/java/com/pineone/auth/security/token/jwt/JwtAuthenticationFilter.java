@@ -1,7 +1,7 @@
 package com.pineone.auth.security.token.jwt;
 
 import com.pineone.auth.api.controller.constant.ErrorCode;
-import com.pineone.auth.api.service.ServletAuthHandler;
+import com.pineone.auth.security.ServletAuthHandler;
 import com.pineone.auth.security.CustomAuthenticationException;
 import com.pineone.auth.security.SecurityProvider;
 import com.pineone.auth.security.UserPrincipal;

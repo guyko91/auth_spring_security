@@ -2,7 +2,7 @@ package com.pineone.auth.security.oauth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pineone.auth.api.controller.constant.ErrorCode;
-import com.pineone.auth.api.service.ServletAuthHandler;
+import com.pineone.auth.security.ServletAuthHandler;
 import com.pineone.auth.api.service.UserTokenService;
 import com.pineone.auth.api.service.dto.AuthTokenCreateCommand;
 import com.pineone.auth.config.AuthProperties;

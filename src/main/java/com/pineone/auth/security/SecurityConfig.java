@@ -2,7 +2,6 @@ package com.pineone.auth.security;
 
 import static org.springframework.boot.autoconfigure.security.servlet.PathRequest.toStaticResources;
 
-import com.pineone.auth.api.service.ServletAuthHandler;
 import com.pineone.auth.security.oauth.CustomOAuth2UserService;
 import com.pineone.auth.security.oauth.OAuth2AuthenticationHandler;
 import com.pineone.auth.security.token.TokenProvider;

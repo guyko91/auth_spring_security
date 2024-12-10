@@ -1,10 +1,9 @@
-package com.pineone.auth.api.service;
+package com.pineone.auth.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pineone.auth.api.controller.constant.ApiResult;
 import com.pineone.auth.api.controller.constant.ErrorCode;
 import com.pineone.auth.config.AuthProperties;
-import com.pineone.auth.security.token.TokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -21,12 +20,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class ServletAuthHandler {
 
     private final AuthProperties authProperties;
-    private final TokenProvider tokenProvider;
     private final ObjectMapper objectMapper;
 
     private final String AUTHORIZATION_HEADER_KEY = "Authorization";
     private final String TOKEN_PREFIX = "Bearer ";
-    private final String AUTH_REFRESH_TOKEN_COOKIE_KEY = "refreshToken";
 
     public void processOAuthTokenResponse(HttpServletResponse response, String tokenUuid)
         throws IOException {

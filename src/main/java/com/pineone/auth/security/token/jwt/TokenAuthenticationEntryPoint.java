@@ -2,7 +2,7 @@ package com.pineone.auth.security.token.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pineone.auth.api.controller.constant.ErrorCode;
-import com.pineone.auth.api.service.ServletAuthHandler;
+import com.pineone.auth.security.ServletAuthHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;

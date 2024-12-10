@@ -1,7 +1,6 @@
 package com.pineone.auth.security;
 
 import com.pineone.auth.api.controller.constant.ErrorCode;
-import com.pineone.auth.api.service.ServletAuthHandler;
 import com.pineone.auth.security.token.TokenProvider;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
