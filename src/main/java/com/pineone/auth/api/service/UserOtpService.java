@@ -6,7 +6,6 @@ import com.pineone.auth.api.model.UserOtp;
 import com.pineone.auth.api.repository.UserOtpRepository;
 import com.pineone.auth.api.service.dto.OtpRequiredResult;
 import com.pineone.auth.config.AuthProperties;
-import com.pineone.auth.security.otp.OtpProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,8 +17,8 @@ public class UserOtpService {
 
     private final UserOtpRepository repository;
     private final BidirectionalCipher cipher;
+    private final OtpProvidable otpProvider;
 
-    private final OtpProvider otpProvider;
     private final AuthProperties authProperties;
 
     public OtpRequiredResult createEncodedOtpSecret(long userSeq) {

@@ -7,6 +7,7 @@ import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.pineone.auth.api.controller.constant.ErrorCode;
 import com.pineone.auth.api.controller.exception.BusinessException;
+import com.pineone.auth.api.service.OtpProvidable;
 import com.pineone.auth.config.AuthProperties;
 import de.taimos.totp.TOTP;
 import java.io.ByteArrayOutputStream;
@@ -22,11 +23,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class OtpProvider {
+public class GoogleOtpProvider implements OtpProvidable {
 
     private final AuthProperties authProperties;
 
     // 사용자 마다 고유한 Secret Key 생성
+    @Override
     public String createSecret() {
         SecureRandom random = new SecureRandom();
         byte[] bytes = new byte[20];
@@ -36,6 +38,7 @@ public class OtpProvider {
     }
 
     // Google Authenticator OTP 인증 URL 생성
+    @Override
     public String createOtpAuthUrl(String secretKey, String account) {
         String issuer = authProperties.getOtp().getIssuerName();
 
@@ -46,6 +49,7 @@ public class OtpProvider {
     }
 
     // QR Code 이미지 생성
+    @Override
     public String getQRImageBase64(String googleOTPAuthURL, int height, int width) {
         try {
             BitMatrix bitMatrix = new MultiFormatWriter().encode(googleOTPAuthURL, BarcodeFormat.QR_CODE, width, height);
@@ -60,6 +64,7 @@ public class OtpProvider {
     }
 
     // OTP 코드 검증
+    @Override
     public boolean verifyOtp(String secretKey, String otpCode) {
         String generatedOTP = getTOTPCode(secretKey);
         return generatedOTP.equals(otpCode);

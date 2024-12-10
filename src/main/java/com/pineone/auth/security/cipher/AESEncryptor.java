@@ -1,4 +1,4 @@
-package com.pineone.auth.security;
+package com.pineone.auth.security.cipher;
 
 import com.pineone.auth.api.service.BidirectionalCipher;
 import java.security.SecureRandom;
