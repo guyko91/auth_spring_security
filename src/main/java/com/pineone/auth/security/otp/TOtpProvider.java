@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class GoogleOtpProvider implements OtpProvidable {
+public class TOtpProvider implements OtpProvidable {
 
     private final AuthProperties authProperties;
 
@@ -37,7 +37,6 @@ public class GoogleOtpProvider implements OtpProvidable {
         return base32.encodeToString(bytes);
     }
 
-    // Google Authenticator OTP 인증 URL 생성
     @Override
     public String createOtpAuthUrl(String secretKey, String account) {
         String issuer = authProperties.getOtp().getIssuerName();
