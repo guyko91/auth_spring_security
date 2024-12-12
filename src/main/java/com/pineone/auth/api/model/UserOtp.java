@@ -1,6 +1,5 @@
 package com.pineone.auth.api.model;
 
-import com.pineone.auth.api.service.BidirectionalCipher;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -46,12 +45,12 @@ public class UserOtp extends BaseTimeEntity {
         return lastVerifiedAt == null || lastVerifiedAt.plusDays(maxExpDays).isBefore(LocalDateTime.now());
     }
 
-    public String getDecodedSecret(BidirectionalCipher cipher) throws Exception {
-        return cipher.decrypt(encryptionKey, secret);
-    }
-
     public void refreshDate(LocalDateTime dateTime) {
         lastVerifiedAt = dateTime;
     }
+
+    public String getEncodedSecret() { return secret; }
+
+    public String getEncKey() { return encryptionKey; }
 
 }

@@ -16,7 +16,7 @@ public class AESEncryptor implements BidirectionalCipher {
 
     // 암호화 메서드
     @Override
-    public String encrypt(String base64SecretKey, String value) throws Exception {
+    public String encrypt(String base64SecretKey, String plainText) throws Exception {
         // SecretKeySpec 생성 (256비트 = 32바이트)
         byte[] secretKey = Base64.getDecoder().decode(base64SecretKey);
         SecretKeySpec keySpec = new SecretKeySpec(secretKey, SECRET_KEY_ALGORITHM);
@@ -32,7 +32,7 @@ public class AESEncryptor implements BidirectionalCipher {
         cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
 
         // 암호화 수행
-        byte[] encrypted = cipher.doFinal(value.getBytes("UTF-8"));
+        byte[] encrypted = cipher.doFinal(plainText.getBytes("UTF-8"));
 
         // IV와 암호문을 합쳐서 Base64로 인코딩하여 반환
         byte[] combined = new byte[iv.length + encrypted.length];

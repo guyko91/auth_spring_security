@@ -13,6 +13,7 @@ import com.pineone.auth.api.service.dto.SignUpResult;
 import com.pineone.auth.api.service.dto.SignupCommand;
 import com.pineone.auth.api.service.dto.TokenInfoResult;
 import jakarta.validation.Valid;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -63,8 +64,9 @@ public class PublicApiController {
 
         String tokenKey = otpVerifyRequest.tokenKey();
         String code = otpVerifyRequest.code();
+        LocalDateTime verifyDateTime = LocalDateTime.now();
 
-        authFacade.verifyUserOtp(tokenKey, code);
+        authFacade.verifyUserOtp(tokenKey, code, verifyDateTime);
 
         return ResponseEntity.ok(ApiResult.ok());
     }

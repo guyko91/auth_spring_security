@@ -1,14 +1,14 @@
 package com.pineone.auth.security.oauth;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pineone.auth.api.controller.constant.ErrorCode;
-import com.pineone.auth.security.ServletAuthHandler;
+import com.pineone.auth.api.service.UserOtpService;
 import com.pineone.auth.api.service.UserTokenService;
 import com.pineone.auth.api.service.dto.AuthTokenCreateCommand;
-import com.pineone.auth.config.AuthProperties;
+import com.pineone.auth.api.service.dto.OtpRequiredResult;
+import com.pineone.auth.security.ServletAuthHandler;
 import com.pineone.auth.security.UserPrincipal;
-import com.pineone.auth.security.token.TokenPairDto;
 import com.pineone.auth.security.token.TokenHandler;
+import com.pineone.auth.security.token.TokenPairDto;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,11 +24,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class OAuth2AuthenticationHandler implements AuthenticationSuccessHandler, AuthenticationFailureHandler {
 
-    private final AuthProperties authProperties;
     private final TokenHandler tokenHandler;
     private final ServletAuthHandler servletAuthHandler;
     private final UserTokenService userTokenService;
-    private final ObjectMapper objectMapper;
+    private final UserOtpService userOtpService;
 
     /**
      * OAuth 인증 성공 핸들러
@@ -46,8 +45,9 @@ public class OAuth2AuthenticationHandler implements AuthenticationSuccessHandler
 
         AuthTokenCreateCommand authTokenCreateCommand = AuthTokenCreateCommand.of(userPrincipal.getSeq(), tokenPairDto);
         String tokenUuid = userTokenService.saveAuthToken(authTokenCreateCommand);
+        OtpRequiredResult otpResult = userOtpService.checkUserOtpVerifyRequired(userPrincipal.getSeq());
 
-        servletAuthHandler.processOAuthTokenResponse(response, tokenUuid);
+        servletAuthHandler.processOAuthTokenResponse(response, tokenUuid, otpResult);
     }
 
     /**

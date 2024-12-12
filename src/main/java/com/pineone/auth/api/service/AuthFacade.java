@@ -16,6 +16,7 @@ import com.pineone.auth.security.UserPrincipal;
 import com.pineone.auth.security.token.TokenDto;
 import com.pineone.auth.security.token.TokenPairDto;
 import com.pineone.auth.security.token.TokenHandler;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +39,7 @@ public class AuthFacade {
 
         TokenPairDto tokenPair = tokenHandler.createTokenPair(userPrincipal);
         String tokenUuid = createAndGetAuthTokenUuid(userPrincipal.getSeq(), tokenPair);
-        OtpRequiredResult otpResult = userOtpService.isUserOtpVerifyRequired(userPrincipal.getSeq());
+        OtpRequiredResult otpResult = userOtpService.checkUserOtpVerifyRequired(userPrincipal.getSeq());
 
         return LoginResult.of(tokenUuid, user, otpResult);
     }
@@ -61,14 +62,12 @@ public class AuthFacade {
         return new TokenInfoResult(userAuthToken.getAccessToken(), userAuthToken.getRefreshToken());
     }
 
-    public void verifyUserOtp(String tokenKey, String code) {
+    public void verifyUserOtp(String tokenKey, String code, LocalDateTime verifyDateTime) {
         UserAuthToken userAuthToken = findUserAuthTokenBy(tokenKey);
         long userSeq = userAuthToken.getUserSeq();
 
-        boolean otpCodeMatched = userOtpService.verifyUserOtpCode(userSeq, code);
-        if (!otpCodeMatched) {
-            throw new BusinessException(ErrorCode.BAD_REQUEST_INVALID_PARAMETER_OTP_CODE);
-        }
+        boolean otpCodeMatched = userOtpService.verifyUserOtpCode(userSeq, code, verifyDateTime);
+        if (!otpCodeMatched) { throw new BusinessException(ErrorCode.BAD_REQUEST_INVALID_PARAMETER_OTP_CODE); }
     }
 
     public RefreshResult refresh(String refreshToken) {

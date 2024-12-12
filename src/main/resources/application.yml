@@ -103,8 +103,12 @@ prop:
     accessTokenExpMilli: 1800000
     refreshTokenExpMilli: 864000000
   oauth2:
-    loginSuccessRedirectUri: http://localhost:8080/success
-    loginSuccessTokenQueryParam: accessToken
+    loginSuccessRedirectUri: http://localhost:8080/public/view/success
+    otpRequireRedirectUri: http://localhost:8080/public/view/otp
+    loginSuccessTokenQueryParam: tokenKey
+    otpQrCodeQueryParam: otpQrCode
   otp:
     issuerName: "Auth Server"
     verifyExpDays: 30
+    qrCodeWidth: 200
+    qrCodeHeight: 200

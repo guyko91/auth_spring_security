@@ -31,13 +31,17 @@ public class AuthProperties {
     @Data
     public static class OAuth2 {
         private String loginSuccessRedirectUri;
+        private String otpRequireRedirectUri;
         private String loginSuccessTokenQueryParam;
+        private String otpQrCodeQueryParam;
     }
 
     @Data
     public static class Otp {
         private String issuerName;
         private int verifyExpDays;
+        private int qrCodeWidth;
+        private int qrCodeHeight;
     }
 
 }
