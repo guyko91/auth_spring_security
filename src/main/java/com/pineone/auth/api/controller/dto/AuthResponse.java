@@ -5,7 +5,7 @@ public record AuthResponse(
     OtpRequireResponse otpRequire
 ) {
     public static AuthResponse otpNotRequired(String tokenKey) {
-        return new AuthResponse(tokenKey, null);
+        return new AuthResponse(tokenKey, OtpRequireResponse.otpNotRequired());
     }
 
     public static AuthResponse otpRequired(String tokenKey, OtpRequireResponse otpRequire) {

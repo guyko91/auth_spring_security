@@ -5,7 +5,7 @@ import lombok.Getter;
 import org.springframework.data.redis.core.RedisHash;
 
 @Getter
-@RedisHash(value = "user_auth_tokens", timeToLive = 30)
+@RedisHash(value = "user_auth_tokens", timeToLive = 600)
 public class UserAuthToken {
 
     @Id

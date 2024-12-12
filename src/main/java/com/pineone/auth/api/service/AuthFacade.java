@@ -65,7 +65,7 @@ public class AuthFacade {
         UserAuthToken userAuthToken = findUserAuthTokenBy(tokenKey);
         long userSeq = userAuthToken.getUserSeq();
 
-        boolean otpCodeMatched = userOtpService.isUserOtpCodeMatched(userSeq, code);
+        boolean otpCodeMatched = userOtpService.verifyUserOtpCode(userSeq, code);
         if (!otpCodeMatched) {
             throw new BusinessException(ErrorCode.BAD_REQUEST_INVALID_PARAMETER_OTP_CODE);
         }

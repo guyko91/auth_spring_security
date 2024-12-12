@@ -50,4 +50,8 @@ public class UserOtp extends BaseTimeEntity {
         return cipher.decrypt(encryptionKey, secret);
     }
 
+    public void refreshDate(LocalDateTime dateTime) {
+        lastVerifiedAt = dateTime;
+    }
+
 }

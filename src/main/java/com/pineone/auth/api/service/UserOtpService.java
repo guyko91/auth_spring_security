@@ -6,6 +6,7 @@ import com.pineone.auth.api.model.UserOtp;
 import com.pineone.auth.api.repository.UserOtpRepository;
 import com.pineone.auth.api.service.dto.OtpRequiredResult;
 import com.pineone.auth.config.AuthProperties;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,10 +49,16 @@ public class UserOtpService {
         return OtpRequiredResult.otpNotRequired();
     }
 
-    public boolean isUserOtpCodeMatched(long userSeq, String code) {
+    public boolean verifyUserOtpCode(long userSeq, String code) {
         UserOtp userOtp = findUserOtpBy(userSeq);
         String decodedSecret = decodeUserOtpSecret(userOtp);
-        return otpProvider.verifyOtp(decodedSecret, code);
+
+        boolean verified = otpProvider.verifyOtp(decodedSecret, code);
+        LocalDateTime now = LocalDateTime.now();
+
+        if (verified) { userOtp.refreshDate(now); }
+
+        return verified;
     }
 
     private String decodeUserOtpSecret(UserOtp userOtp) {

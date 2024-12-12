@@ -98,8 +98,7 @@
     .then(response => response.json())
     .then(data => {
       if (data.code === '20000000') {
-        alert('otp 인증 성공!');
-        window.opener.postMessage({tokenKey: tokenKey}, "*");
+        alert('otp 인증 성공! Token Key 를 client에 전달하세요. (Token Key : ' + tokenKey + ')');
       } else {
         alert('OTP 인증 실패');
       }

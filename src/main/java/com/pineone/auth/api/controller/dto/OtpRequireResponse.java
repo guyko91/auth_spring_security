@@ -11,4 +11,8 @@ public record OtpRequireResponse(
         return new OtpRequireResponse(result.otpRequired(), result.otpQrCode());
     }
 
+    public static OtpRequireResponse otpNotRequired() {
+        return new OtpRequireResponse(false, null);
+    }
+
 }
