@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class SecurityProvider {
+public class SecurityHandler {
 
     // TODO SpringSecurity 와 순환 참조 발생하여 AuthenticationManager 대신 AuthenticationManagerBuilder 를 사용
     private final AuthenticationManagerBuilder authenticationManagerBuilder;

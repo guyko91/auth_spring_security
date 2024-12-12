@@ -1,10 +1,8 @@
-package com.pineone.auth.security.token;
+package com.pineone.auth.security.token.jwt;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;

@@ -4,7 +4,7 @@ import static org.springframework.boot.autoconfigure.security.servlet.PathReques
 
 import com.pineone.auth.security.oauth.CustomOAuth2UserService;
 import com.pineone.auth.security.oauth.OAuth2AuthenticationHandler;
-import com.pineone.auth.security.token.TokenProvider;
+import com.pineone.auth.security.token.TokenHandler;
 import com.pineone.auth.security.token.jwt.TokenAccessDeniedHandler;
 import com.pineone.auth.security.token.jwt.TokenAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
@@ -35,14 +35,14 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
     private final CustomOAuth2UserService customOAuth2UserService;
 
-    private final TokenProvider tokenProvider;
+    private final TokenHandler tokenHandler;
     private final TokenAuthenticationEntryPoint tokenAuthenticationEntryPoint;
     private final TokenAccessDeniedHandler tokenAccessDeniedHandler;
 
     private final OAuth2AuthenticationHandler oAuth2AuthenticationHandler;
 
     private final ServletAuthHandler servletAuthHandler;
-    private final SecurityProvider securityProvider;
+    private final SecurityHandler securityHandler;
 
     private static final String[] FILTER_WHITELIST = {
         "/h2-console/**",
@@ -55,7 +55,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         CustomAuthenticationFilter customAuthFilter = new CustomAuthenticationFilter(
-            servletAuthHandler, securityProvider, tokenProvider, FILTER_WHITELIST);
+            servletAuthHandler, securityHandler, tokenHandler, FILTER_WHITELIST);
 
         http
             // 공통 설정 (CSRF, 세션 관리 등)

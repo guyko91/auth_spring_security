@@ -1,7 +1,7 @@
 package com.pineone.auth.security;
 
 import com.pineone.auth.api.controller.constant.ErrorCode;
-import com.pineone.auth.security.token.TokenProvider;
+import com.pineone.auth.security.token.TokenHandler;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -21,8 +21,8 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
     public static final String TOKEN_EXCEPTION_ATTRIBUTE_KEY = "TOKEN_EXCEPTION";
 
     private final ServletAuthHandler servletAuthHandler;
-    private final SecurityProvider securityProvider;
-    private final TokenProvider tokenProvider;
+    private final SecurityHandler securityHandler;
+    private final TokenHandler tokenHandler;
     private final String[] AUTH_WHITELIST;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
@@ -61,9 +61,9 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
         String accessToken = servletAuthHandler.getAccessTokenStringFrom(request)
             .orElseThrow(() -> new CustomAuthenticationException(ErrorCode.UNAUTHORIZED, "인증 토큰이 없습니다."));
 
-        UserPrincipal userPrincipal = tokenProvider.validateAndGetUserPrincipalFrom(accessToken);
+        UserPrincipal userPrincipal = tokenHandler.validateAndGetUserPrincipalFrom(accessToken);
 
-        securityProvider.authenticateTokenUserPrincipal(userPrincipal);
+        securityHandler.authenticateTokenUserPrincipal(userPrincipal);
     }
 
     private void setTokenExceptionAttribute(HttpServletRequest request, ErrorCode errorCode) {

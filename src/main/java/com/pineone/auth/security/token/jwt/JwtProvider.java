@@ -3,9 +3,11 @@ package com.pineone.auth.security.token.jwt;
 import com.pineone.auth.api.controller.constant.ErrorCode;
 import com.pineone.auth.api.controller.exception.BusinessException;
 import com.pineone.auth.security.UserPrincipal;
-import com.pineone.auth.security.token.RSAKeyUtil;
+import com.pineone.auth.security.token.TokenClaims;
 import com.pineone.auth.security.token.TokenDto;
+import com.pineone.auth.security.token.TokenProvidable;
 import com.pineone.auth.security.token.TokenType;
+import com.pineone.auth.security.token.exception.TokenValidateException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -18,11 +20,12 @@ import java.util.TimeZone;
 import org.springframework.stereotype.Component;
 
 @Component
-public class JwtProvider {
+public class JwtProvider implements TokenProvidable {
 
     public static final String JWT_CLAIM_KEY_ID = "id";
     public static final String JWT_CLAIM_KEY_NAME = "name";
 
+    @Override
     public TokenDto createToken(UserPrincipal userPrincipal, TokenType tokenType, Date expiryDate) {
         PrivateKey key = getPrivateKey();
 
@@ -48,14 +51,14 @@ public class JwtProvider {
         return new TokenDto(tokenType, token, expireDateTime);
     }
 
-    public Claims validateToken(String tokenString) throws JwtException {
-        PublicKey publicKey = getPublicKey();
-
-        return Jwts.parserBuilder()
-            .setSigningKey(publicKey)
-            .build()
-            .parseClaimsJws(tokenString)
-            .getBody();
+    @Override
+    public TokenClaims validateToken(String tokenString) throws TokenValidateException {
+        try {
+           Claims jwtClaims = parseTokenString(tokenString);
+            return TokenClaims.of(jwtClaims);
+        }catch (JwtException e) {
+            throw new TokenValidateException();
+        }
     }
 
     private PrivateKey getPrivateKey() {
@@ -84,5 +87,13 @@ public class JwtProvider {
         return key;
     }
 
+    private Claims parseTokenString(String tokenString) {
+        PublicKey publicKey = getPublicKey();
+        return Jwts.parserBuilder()
+            .setSigningKey(publicKey)
+            .build()
+            .parseClaimsJws(tokenString)
+            .getBody();
+    }
 
 }

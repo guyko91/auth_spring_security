@@ -8,7 +8,7 @@ import com.pineone.auth.api.service.dto.AuthTokenCreateCommand;
 import com.pineone.auth.config.AuthProperties;
 import com.pineone.auth.security.UserPrincipal;
 import com.pineone.auth.security.token.TokenPairDto;
-import com.pineone.auth.security.token.TokenProvider;
+import com.pineone.auth.security.token.TokenHandler;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
 public class OAuth2AuthenticationHandler implements AuthenticationSuccessHandler, AuthenticationFailureHandler {
 
     private final AuthProperties authProperties;
-    private final TokenProvider tokenProvider;
+    private final TokenHandler tokenHandler;
     private final ServletAuthHandler servletAuthHandler;
     private final UserTokenService userTokenService;
     private final ObjectMapper objectMapper;
@@ -42,7 +42,7 @@ public class OAuth2AuthenticationHandler implements AuthenticationSuccessHandler
         Authentication authentication) throws IOException {
 
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        TokenPairDto tokenPairDto = tokenProvider.createTokenPair(userPrincipal);
+        TokenPairDto tokenPairDto = tokenHandler.createTokenPair(userPrincipal);
 
         AuthTokenCreateCommand authTokenCreateCommand = AuthTokenCreateCommand.of(userPrincipal.getSeq(), tokenPairDto);
         String tokenUuid = userTokenService.saveAuthToken(authTokenCreateCommand);

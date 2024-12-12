@@ -11,11 +11,11 @@ import com.pineone.auth.api.service.dto.RefreshResult;
 import com.pineone.auth.api.service.dto.SignUpResult;
 import com.pineone.auth.api.service.dto.SignupCommand;
 import com.pineone.auth.api.service.dto.TokenInfoResult;
-import com.pineone.auth.security.SecurityProvider;
+import com.pineone.auth.security.SecurityHandler;
 import com.pineone.auth.security.UserPrincipal;
 import com.pineone.auth.security.token.TokenDto;
 import com.pineone.auth.security.token.TokenPairDto;
-import com.pineone.auth.security.token.TokenProvider;
+import com.pineone.auth.security.token.TokenHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,14 +29,14 @@ public class AuthFacade {
     private final UserTokenService userTokenService;
     private final UserOtpService userOtpService;
 
-    private final SecurityProvider securityProvider;
-    private final TokenProvider tokenProvider;
+    private final SecurityHandler securityHandler;
+    private final TokenHandler tokenHandler;
 
     public LoginResult login(String id, String password) {
-        UserPrincipal userPrincipal = securityProvider.authenticateIdPwd(id, password);
+        UserPrincipal userPrincipal = securityHandler.authenticateIdPwd(id, password);
         User user = findUserWith(userPrincipal.getSeq());
 
-        TokenPairDto tokenPair = tokenProvider.createTokenPair(userPrincipal);
+        TokenPairDto tokenPair = tokenHandler.createTokenPair(userPrincipal);
         String tokenUuid = createAndGetAuthTokenUuid(userPrincipal.getSeq(), tokenPair);
         OtpRequiredResult otpResult = userOtpService.isUserOtpVerifyRequired(userPrincipal.getSeq());
 
@@ -47,9 +47,9 @@ public class AuthFacade {
         userService.checkUserIdDuplication(command.id());
 
         User user = userService.createUserWith(command.id(), command.password(), command.name());
-        UserPrincipal userPrincipal = securityProvider.authenticateIdPwd(command.id(), command.password());
+        UserPrincipal userPrincipal = securityHandler.authenticateIdPwd(command.id(), command.password());
 
-        TokenPairDto tokenPair = tokenProvider.createTokenPair(userPrincipal);
+        TokenPairDto tokenPair = tokenHandler.createTokenPair(userPrincipal);
         String tokenUuid = createAndGetAuthTokenUuid(userPrincipal.getSeq(), tokenPair);
         OtpRequiredResult otpResult = userOtpService.createEncodedOtpSecret(userPrincipal.getSeq());
 
@@ -73,7 +73,7 @@ public class AuthFacade {
 
     public RefreshResult refresh(String refreshToken) {
 
-        UserPrincipal userPrincipal = securityProvider.getCurrentUserPrincipal()
+        UserPrincipal userPrincipal = securityHandler.getCurrentUserPrincipal()
             .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED));
 
         User user = findUserWith(userPrincipal.getSeq());
@@ -81,7 +81,7 @@ public class AuthFacade {
         userTokenService.findUserTokenBy(refreshToken)
             .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED_REFRESH_TOKEN_INVALID));
 
-        TokenDto newAccessToken = tokenProvider.createNewAccessToken(userPrincipal);
+        TokenDto newAccessToken = tokenHandler.createNewAccessToken(userPrincipal);
 
         return RefreshResult.of(newAccessToken, user);
     }

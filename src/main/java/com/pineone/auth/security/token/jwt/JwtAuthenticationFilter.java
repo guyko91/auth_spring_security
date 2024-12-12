@@ -3,9 +3,9 @@ package com.pineone.auth.security.token.jwt;
 import com.pineone.auth.api.controller.constant.ErrorCode;
 import com.pineone.auth.security.ServletAuthHandler;
 import com.pineone.auth.security.CustomAuthenticationException;
-import com.pineone.auth.security.SecurityProvider;
+import com.pineone.auth.security.SecurityHandler;
 import com.pineone.auth.security.UserPrincipal;
-import com.pineone.auth.security.token.TokenProvider;
+import com.pineone.auth.security.token.TokenHandler;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -30,8 +30,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * 필터는 빈으로 설정 시 서블릿에도 중복 등록되어 동작하므로, 필터를 빈으로 등록하지 않는다.
      */
     private final ServletAuthHandler servletAuthHandler;
-    private final TokenProvider tokenProvider;
-    private final SecurityProvider securityProvider;
+    private final TokenHandler tokenHandler;
+    private final SecurityHandler securityHandler;
     private final String[] AUTH_WHITELIST;
 
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
@@ -71,9 +71,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String accessToken = servletAuthHandler.getAccessTokenStringFrom(request)
             .orElseThrow(() -> new CustomAuthenticationException(ErrorCode.UNAUTHORIZED, "인증 토큰이 없습니다."));
 
-        UserPrincipal userPrincipal = tokenProvider.validateAndGetUserPrincipalFrom(accessToken);
+        UserPrincipal userPrincipal = tokenHandler.validateAndGetUserPrincipalFrom(accessToken);
 
-        securityProvider.authenticateTokenUserPrincipal(userPrincipal);
+        securityHandler.authenticateTokenUserPrincipal(userPrincipal);
     }
 
     private void setTokenExceptionAttribute(HttpServletRequest request, ErrorCode errorCode) {
