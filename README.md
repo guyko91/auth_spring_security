@@ -1,17 +1,34 @@
-# 스프링 시큐리티 인증 서버
+# SSO 인증 서버
+
+## 기술 스택
+- Spring Boot 3.4.0
+- Spring Security 6
+- Spring Data JPA
+- Spring Data Redis
+- Spring Thymeleaf
 
 ## 제공 기능
-### 1. ID / PW 기반의 회원가입 및 로그인
-### 2. OAuth2.0 기반의 회원가입 및 로그인
-### 3. JWT 기반 토큰 발급
-### 4. 기타
-1) 다중 계정 및 다중 로그인 지원
-* 같은 사용자가 ID/PW 및 OAuth2.0 회원가입/로그인 시, 별도의 계정으로 처리됨.
-* 같은 사용자는 최대 1개의 RefreshToken 정보만 저장됨.
-  * 다중 디바이스 로그인 구현 시, 최대 로그인 개수 등 정책 및 수정 필요.
-2) AOS / IOS 네이티브 앱 연동 시, 쿠키 기반의 처리
-  * 네이티브 앱에서 쿠키 관련 처리 검토 필요. 
-  * 브라우저 Client 가 아닌 네이티브 앱 대상 RestAPI 의 경우, RefreshToken 을 Body 에 내리는 방안도 검토 필요.
-3) RefreshToken 관련
-  * RefreshToken 유효기간 내에는 새로운 AccessToken 만 발급하고, RefreshToken 이 만료된 경우, 에러처리함. (재로그인 플로우)
-  * RefreshToken 유효기간 -3일 전에는 새로운 RefreshToken 을 발급하는 등의 정책도 검토 가능.
+### 1. Client (WEB/ APP) 대상 토탈 인증 프로세스 제공
+- 로그인 / 회원가입 / OTP 인증 화면 제공 (SSR - thymeleaf)
+- ID / PW 기반의 회원 가입 및 로그인
+- OAuth2.0 기반의 회원 가입 및 로그인
+- JWT 기반의 토큰 발급
+- TOTP 2차 인증 기능 제공
+
+### 2. 발급된 토큰 기반 인증 모듈 제공
+- 작성 필요 (TODO)
+
+### 3. TODO
+#### 1) 토큰 기반 서비스/API 별 호출 권한 관리
+- 발급된 JWT access token 을 통한 내부 타 서비스 API 호출 시 권한 체크 방식 (in 인증 모듈 라이브러리)
+
+#### 2) OTP 인증 플로우 고도화
+- OTP 인증 시나리오 고도화 (인증 주기, 인증 흐름 등)
+- OTP 를 사용하지 않는 서비스의 경우 yml 설정을 통한 비활성화 처리
+
+#### 3) 기타
+- body 나 header 로 주고받는 토큰에 대한 보안 검토
+- 로그인 / 회원가입 성공 후, client 에 postMessage 를 통한 토큰 전달 방식 검토
+- 각 모듈 테스트 코드
+- application.yml 환경별 분리 (local, dev, stg, prod)
+- 프론트엔드 코드 리팩토링 필요
