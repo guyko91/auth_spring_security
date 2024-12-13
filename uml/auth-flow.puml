@@ -4,13 +4,15 @@ title 인증 서버 시퀀스 다이어그램
 '---------------------------------------------------
 ' 객체 정의
 '---------------------------------------------------
-participant "User (Resource Owner)"     as USER
-participant "Client"                    as CLIENT  #lightyellow
-participant "Auth Server (Front)"       as SERVERF #lightblue
-participant "Auth Server (Back)"        as SERVERB #lightpink
+participant "User"     as USER
+participant "Client (WEB/APP)"                    as CLIENT  #lightyellow
+box "Auth Server"  #lightGray
+participant "Front"       as SERVERF #lightblue
+participant "Back"        as SERVERB #lightpink
 participant "Database (RDB)"            as DB      #gray
 participant "Database (Redis)"          as REDIS   #lightgreen
-participant "Service Server (Back)"     as SERVERS #lavender
+end box
+participant "Service Server"     as SERVERS #lavender
 
 '---------------------------------------------------
 ' OAuth 2.0 Authorization Flow
@@ -20,7 +22,7 @@ USER -> CLIENT : 1. 로그인 및 회원가입 페이지 진입
 
 'group Automated by Spring Security OAuth Client
   ACTIVATE CLIENT #lightyellow
-  CLIENT -> SERVERB : 2. ${AUTH_SERVER}/login 요청
+  CLIENT -> SERVERB : 2. /public/view/login 요청
 
   ACTIVATE SERVERB #lightpink
   SERVERB --> SERVERF : 3. 로그인/회원가입 화면 응답
