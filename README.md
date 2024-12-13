@@ -32,3 +32,4 @@
 - 각 모듈 테스트 코드
 - application.yml 환경별 분리 (local, dev, stg, prod)
 - 프론트엔드 코드 리팩토링 필요
+- 다른 방식의 2FA 인증 방식 추가 (SMS, 이메일 등등)
