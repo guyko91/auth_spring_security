@@ -32,12 +32,6 @@ public class UserTokenService {
     }
 
     @Transactional
-    public void logoutUserToken(long userSeq) {
-        userTokenRepository.findByUserSeq(userSeq)
-            .ifPresent(userTokenRepository::delete);
-    }
-
-    @Transactional
     public void logoutUserToken(String refreshToken) {
         userTokenRepository.findByRefreshToken(refreshToken)
             .ifPresent(userTokenRepository::delete);

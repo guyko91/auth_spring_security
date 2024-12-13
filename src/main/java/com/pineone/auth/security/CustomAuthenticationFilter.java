@@ -44,13 +44,13 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
         try {
             authenticateRequest(request);
         } catch (ExpiredJwtException e) {
-            setTokenExceptionAttribute(request, ErrorCode.UNAUTHORIZED_TOKEN_EXPIRED);
+            setTokenAuthenticationExceptionAttribute(request, ErrorCode.UNAUTHORIZED_TOKEN_EXPIRED);
         } catch (JwtException e) {
-            setTokenExceptionAttribute(request, ErrorCode.UNAUTHORIZED_TOKEN_ERROR);
+            setTokenAuthenticationExceptionAttribute(request, ErrorCode.UNAUTHORIZED_TOKEN_ERROR);
         } catch (AuthenticationException e) {
-            setTokenExceptionAttribute(request, ErrorCode.UNAUTHORIZED);
+            setTokenAuthenticationExceptionAttribute(request, ErrorCode.UNAUTHORIZED);
         } catch (Exception e) {
-            setTokenExceptionAttribute(request, ErrorCode.INTERNAL_SERVER_ERROR);
+            setTokenAuthenticationExceptionAttribute(request, ErrorCode.INTERNAL_SERVER_ERROR);
         } finally {
             filterChain.doFilter(request, response);
         }
@@ -58,15 +58,19 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void authenticateRequest(HttpServletRequest request) {
-        String accessToken = servletAuthHandler.getAccessTokenStringFrom(request)
-            .orElseThrow(() -> new CustomAuthenticationException(ErrorCode.UNAUTHORIZED, "인증 토큰이 없습니다."));
-
+        String accessToken = parseAccessToken(request);
         UserPrincipal userPrincipal = tokenHandler.validateAndGetUserPrincipalFrom(accessToken);
 
         securityHandler.authenticateTokenUserPrincipal(userPrincipal);
     }
 
-    private void setTokenExceptionAttribute(HttpServletRequest request, ErrorCode errorCode) {
+    private String parseAccessToken(HttpServletRequest request) {
+        return servletAuthHandler.getAccessTokenStringFrom(request)
+            .orElseThrow(
+                () -> new CustomAuthenticationException(ErrorCode.UNAUTHORIZED, "인증 토큰이 없습니다."));
+    }
+
+    private void setTokenAuthenticationExceptionAttribute(HttpServletRequest request, ErrorCode errorCode) {
         request.setAttribute(TOKEN_EXCEPTION_ATTRIBUTE_KEY, errorCode);
     }
 }

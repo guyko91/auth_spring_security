@@ -7,13 +7,12 @@ import com.pineone.auth.api.model.UserAuthToken;
 import com.pineone.auth.api.service.dto.AuthTokenCreateCommand;
 import com.pineone.auth.api.service.dto.LoginResult;
 import com.pineone.auth.api.service.dto.OtpRequiredResult;
-import com.pineone.auth.api.service.dto.RefreshResult;
+import com.pineone.auth.api.service.dto.TokenRefreshResult;
 import com.pineone.auth.api.service.dto.SignUpResult;
 import com.pineone.auth.api.service.dto.SignupCommand;
 import com.pineone.auth.api.service.dto.TokenInfoResult;
 import com.pineone.auth.security.SecurityHandler;
 import com.pineone.auth.security.UserPrincipal;
-import com.pineone.auth.security.token.TokenDto;
 import com.pineone.auth.security.token.TokenPairDto;
 import com.pineone.auth.security.token.TokenHandler;
 import java.time.LocalDateTime;
@@ -62,31 +61,33 @@ public class AuthFacade {
         return new TokenInfoResult(userAuthToken.getAccessToken(), userAuthToken.getRefreshToken());
     }
 
-    public void verifyUserOtp(String tokenKey, String code, LocalDateTime verifyDateTime) {
+    public void verifyUserOtp(String tokenKey, String inputCode, LocalDateTime verifyDateTime) {
         UserAuthToken userAuthToken = findUserAuthTokenBy(tokenKey);
         long userSeq = userAuthToken.getUserSeq();
 
-        boolean otpCodeMatched = userOtpService.verifyUserOtpCode(userSeq, code, verifyDateTime);
+        boolean otpCodeMatched = userOtpService.verifyUserOtpCode(userSeq, inputCode, verifyDateTime);
         if (!otpCodeMatched) { throw new BusinessException(ErrorCode.BAD_REQUEST_INVALID_PARAMETER_OTP_CODE); }
     }
 
-    public RefreshResult refresh(String refreshToken) {
+    public TokenRefreshResult refresh(String accessToken, String refreshToken) {
+        checkUserRefreshTokenExists(refreshToken);
+        tokenHandler.validateTokenRefreshRequest(accessToken, refreshToken);
 
-        UserPrincipal userPrincipal = securityHandler.getCurrentUserPrincipal()
-            .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED));
-
+        UserPrincipal userPrincipal = tokenHandler.validateAndGetUserPrincipalFrom(accessToken);
+        TokenPairDto tokenPair = tokenHandler.createTokenPair(userPrincipal);
+        String tokenUuid = createAndGetAuthTokenUuid(userPrincipal.getSeq(), tokenPair);
         User user = findUserWith(userPrincipal.getSeq());
 
-        userTokenService.findUserTokenBy(refreshToken)
-            .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED_REFRESH_TOKEN_INVALID));
-
-        TokenDto newAccessToken = tokenHandler.createNewAccessToken(userPrincipal);
-
-        return RefreshResult.of(newAccessToken, user);
+        return TokenRefreshResult.of(user, tokenUuid);
     }
 
     public void logout(String refreshToken) {
         userTokenService.logoutUserToken(refreshToken);
+    }
+
+    private void checkUserRefreshTokenExists(String refreshToken) {
+        userTokenService.findUserTokenBy(refreshToken)
+            .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED_REFRESH_TOKEN_INVALID));
     }
 
     private String createAndGetAuthTokenUuid(long userSeq, TokenPairDto tokenPair) {

@@ -21,6 +21,10 @@ public class TokenClaims {
         return new TokenClaims(claims);
     }
 
+    public long getTokenSubject() {
+        return Long.parseLong((String) claims.get(SUBJECT_KEY));
+    }
+
     public boolean isTokenExpired(Date expiryDate) {
         Date expiration = (Date) claims.get(EXPIRE_DATE_KEY);
         return expiration.before(expiryDate);

@@ -43,8 +43,7 @@ public class PublicApiController {
 
         return ResponseEntity.ok(
             ApiResult.ok(
-                AuthResponse.otpNotRequired(loginResult.tokenUuid())
-            )
+                AuthResponse.otpNotRequired(loginResult.tokenUuid()))
         );
     }
 

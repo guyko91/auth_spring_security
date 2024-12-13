@@ -2,6 +2,7 @@ package com.pineone.auth.security.token.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pineone.auth.api.controller.constant.ErrorCode;
+import com.pineone.auth.security.CustomAuthenticationFilter;
 import com.pineone.auth.security.ServletAuthHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,7 +31,9 @@ public class TokenAuthenticationEntryPoint implements AuthenticationEntryPoint {
     }
 
     private ErrorCode determineErrorCode(HttpServletRequest request) {
-        ErrorCode tokenErrorCode = (ErrorCode) request.getAttribute(JwtAuthenticationFilter.TOKEN_EXCEPTION_ATTRIBUTE_KEY);
+        ErrorCode tokenErrorCode = (ErrorCode) request.getAttribute(
+            CustomAuthenticationFilter.TOKEN_EXCEPTION_ATTRIBUTE_KEY);
+
         return tokenErrorCode != null ? tokenErrorCode : ErrorCode.UNAUTHORIZED;
     }
 

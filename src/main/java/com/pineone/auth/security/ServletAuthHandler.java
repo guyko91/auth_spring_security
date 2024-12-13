@@ -23,8 +23,7 @@ public class ServletAuthHandler {
     private final AuthProperties authProperties;
     private final ObjectMapper objectMapper;
 
-    private final String AUTHORIZATION_HEADER_KEY = "Authorization";
-    private final String TOKEN_PREFIX = "Bearer ";
+    public  final String AUTHORIZATION_HEADER_KEY = "Authorization";
 
     public void processOAuthTokenResponse(HttpServletResponse response, String tokenUuid,
         OtpRequiredResult otpResult) throws IOException {
@@ -46,9 +45,9 @@ public class ServletAuthHandler {
     }
 
     public Optional<String> getAccessTokenStringFrom(HttpServletRequest request) {
-        String authHeader = request.getHeader(AUTHORIZATION_HEADER_KEY);
-        if (StringUtils.hasText(authHeader) && authHeader.startsWith(TOKEN_PREFIX)) {
-            return Optional.of(parseAuthorizationToken(authHeader));
+        String accessTokenHeader = request.getHeader(AUTHORIZATION_HEADER_KEY);
+        if (StringUtils.hasText(accessTokenHeader)) {
+            return Optional.of(accessTokenHeader);
         }
         return Optional.empty();
     }
@@ -95,10 +94,6 @@ public class ServletAuthHandler {
             );
 
         response.getWriter().write(htmlContent);
-    }
-
-    private String parseAuthorizationToken(String authorizationHeader) {
-        return authorizationHeader.substring(TOKEN_PREFIX.length()).trim();
     }
 
 }

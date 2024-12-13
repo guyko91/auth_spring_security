@@ -24,7 +24,16 @@ public class TokenHandler {
         return new TokenPairDto(accessToken, refreshToken);
     }
 
-    public TokenDto createNewAccessToken(UserPrincipal userPrincipal) {
+    public void validateTokenRefreshRequest(String accessToken, String refreshToken) throws TokenValidateException {
+        TokenClaims accessTokenClaims = tokenProvider.validateToken(accessToken);
+        TokenClaims refreshTokenClaims = tokenProvider.validateToken(refreshToken);
+
+        checkTokenSubjectEquals(accessTokenClaims, refreshTokenClaims);
+        validateRefreshReqAccessToken(accessTokenClaims);
+        validateRefreshReqRefreshToken(refreshTokenClaims);
+    }
+
+    private TokenDto createNewAccessToken(UserPrincipal userPrincipal) {
         Date expiryDate = getExpiryDateBy(TokenType.ACCESS_TOKEN);
         return tokenProvider.createToken(userPrincipal, TokenType.ACCESS_TOKEN, expiryDate);
     }
@@ -34,31 +43,31 @@ public class TokenHandler {
         return tokenProvider.createToken(userPrincipal, TokenType.REFRESH_TOKEN, expiryDate);
     }
 
-    public void validateRefreshAccessToken(String tokenString) throws TokenValidateException {
-        TokenClaims claims = tokenProvider.validateToken(tokenString);
+    private void checkTokenSubjectEquals(TokenClaims accessTokenClaims, TokenClaims refreshTokenClaims) {
+        long accessTokenSubject = accessTokenClaims.getTokenSubject();
+        long refreshTokenSubject = refreshTokenClaims.getTokenSubject();
 
-        // ACCESS_TOKEN 만료시간 (버퍼시간 포함)
-        Date expiryDate = new Date(new Date().getTime() - ACCESS_TOKEN_EX_BUFFER_SEC * 1000);
+        if (accessTokenSubject != refreshTokenSubject) { throw new BusinessException(ErrorCode.UNAUTHORIZED_TOKEN_ERROR, "토큰 subject 불일치"); }
+    }
 
-        // ACCESS_TOKEN 만료 전 토큰 갱신 요청 시
-        boolean isExpired = claims.isTokenExpired(expiryDate);
+    private void validateRefreshReqAccessToken(TokenClaims accessTokenClaims) {
+        Date expiryDate = getExpiryDateBy(TokenType.ACCESS_TOKEN);
+        boolean isExpired = accessTokenClaims.isTokenExpired(expiryDate);
         if (!isExpired) {
-            // ACCESS_TOKEN 만료 전 토큰 갱신 요청 시, 예외 처리
             throw new BusinessException(ErrorCode.UNAUTHORIZED_ACCESS_TOKEN_BEFORE_EXPIRED);
         }
     }
 
-    public void validateRefreshToken(String tokenString) throws TokenValidateException {
-        TokenClaims claims = tokenProvider.validateToken(tokenString);
-        boolean isExpired = claims.isTokenExpired(new Date());
+    private void validateRefreshReqRefreshToken(TokenClaims refreshTokenClaims) {
+        Date expiryDate = getExpiryDateBy(TokenType.REFRESH_TOKEN);
+        boolean isExpired = refreshTokenClaims.isTokenExpired(expiryDate);
         if (isExpired) {
-            // 만료된 REFRESH_TOKEN으로 요청 시, 예외 처리 (재로그인 플로우)
             throw new BusinessException(ErrorCode.UNAUTHORIZED_REFRESH_TOKEN_EXPIRED);
         }
     }
 
-    public UserPrincipal validateAndGetUserPrincipalFrom(String tokenString) throws TokenValidateException {
-        TokenClaims claims = tokenProvider.validateToken(tokenString);
+    public UserPrincipal validateAndGetUserPrincipalFrom(String accessToken) throws TokenValidateException {
+        TokenClaims claims = tokenProvider.validateToken(accessToken);
         return claims.toUserPrincipal();
     }
 
