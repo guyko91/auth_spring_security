@@ -72,8 +72,10 @@ public class AuthFacade {
     public TokenRefreshResult refresh(String accessToken, String refreshToken) {
         checkUserRefreshTokenExists(refreshToken);
         tokenHandler.validateTokenRefreshRequest(accessToken, refreshToken);
-
         UserPrincipal userPrincipal = tokenHandler.validateAndGetUserPrincipalFrom(accessToken);
+
+        userTokenService.logoutUserToken(refreshToken);
+
         TokenPairDto tokenPair = tokenHandler.createTokenPair(userPrincipal);
         String tokenUuid = createAndGetAuthTokenUuid(userPrincipal.getSeq(), tokenPair);
         User user = findUserWith(userPrincipal.getSeq());

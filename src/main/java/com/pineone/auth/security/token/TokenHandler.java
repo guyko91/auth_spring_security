@@ -33,6 +33,11 @@ public class TokenHandler {
         validateRefreshReqRefreshToken(refreshTokenClaims);
     }
 
+    public UserPrincipal validateAndGetUserPrincipalFrom(String accessToken) throws TokenValidateException {
+        TokenClaims claims = tokenProvider.validateToken(accessToken);
+        return claims.toUserPrincipal();
+    }
+
     private TokenDto createNewAccessToken(UserPrincipal userPrincipal) {
         Date expiryDate = getExpiryDateBy(TokenType.ACCESS_TOKEN);
         return tokenProvider.createToken(userPrincipal, TokenType.ACCESS_TOKEN, expiryDate);
@@ -64,11 +69,6 @@ public class TokenHandler {
         if (isExpired) {
             throw new BusinessException(ErrorCode.UNAUTHORIZED_REFRESH_TOKEN_EXPIRED);
         }
-    }
-
-    public UserPrincipal validateAndGetUserPrincipalFrom(String accessToken) throws TokenValidateException {
-        TokenClaims claims = tokenProvider.validateToken(accessToken);
-        return claims.toUserPrincipal();
     }
 
     private Date getExpiryDateBy(TokenType tokenType) {
