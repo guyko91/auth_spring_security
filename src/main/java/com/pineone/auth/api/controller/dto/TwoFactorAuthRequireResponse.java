@@ -10,7 +10,12 @@ public record TwoFactorAuthRequireResponse(
 ) {
 
     public static TwoFactorAuthRequireResponse from(TwoFactorAuthRequiredResult result) {
-        return new TwoFactorAuthRequireResponse(result.twoFactorAuthRequired(), TwoFactorAuthInfo.from(result.twoFactorAuthInfoProvidable()));
+        if (!result.twoFactorAuthRequired()) { return otpNotRequired(); }
+        return otpRequired(result.twoFactorAuthInfoProvidable());
+    }
+
+    public static TwoFactorAuthRequireResponse otpRequired(TwoFactorAuthInfoProvidable authInfo) {
+        return new TwoFactorAuthRequireResponse(true, TwoFactorAuthInfo.from(authInfo));
     }
 
     public static TwoFactorAuthRequireResponse otpNotRequired() {

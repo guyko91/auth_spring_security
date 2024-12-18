@@ -80,7 +80,7 @@ public class User2FA extends BaseTimeEntity {
     public boolean checkTOTPAuthCodeMatched(String userInput, LocalDateTime verifyDateTime,
         BidirectionalCipher cipher, OtpProvidable otpProvidable) {
 
-        String decodedSecret = cipher.decrypt(secret, encryptionKey);
+        String decodedSecret = cipher.decrypt(encryptionKey, secret);
         boolean verified = otpProvidable.verifyOtp(decodedSecret, userInput);
 
         return processVerifyResult(verifyDateTime, verified);

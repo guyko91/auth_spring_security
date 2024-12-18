@@ -148,9 +148,8 @@
       return response.json(); // JSON 형태로 응답 body를 파싱
     })
     .then(data => {
-      console.log(data);
-      const tokenKey = data.tokenKey;
-      const authRequired = data.authRequire.authRequired;
+      const tokenKey = data.data.tokenKey;
+      const authRequired = data.data.authRequire.authRequired;
 
       if (data.code === '20200001' && authRequired) {
         const authData = data.data.authRequire.authInfo;

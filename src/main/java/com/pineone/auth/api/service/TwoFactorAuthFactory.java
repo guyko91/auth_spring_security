@@ -29,7 +29,7 @@ public class TwoFactorAuthFactory {
                 String otpSecret = otpProvider.createSecret();
                 String otpEncKey = cipher.generateSecretKey();
 
-                String encodedOtpSecret = cipher.encrypt(otpSecret, otpEncKey);
+                String encodedOtpSecret = cipher.encrypt(otpEncKey, otpSecret);
                 String otpQrCode = createUserOtpQRCode(userSeq, otpSecret);
 
                 yield User2FA.createTOTP(userSeq, encodedOtpSecret, otpEncKey, otpQrCode);
