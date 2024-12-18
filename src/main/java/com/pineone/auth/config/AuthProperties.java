@@ -1,5 +1,6 @@
 package com.pineone.auth.config;
 
+import com.pineone.auth.api.model.TwoFactorAuthMethod;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
@@ -17,7 +18,7 @@ public class AuthProperties {
     private final OAuth2 oauth2 = new OAuth2();
 
     @NestedConfigurationProperty
-    private final Otp otp = new Otp();
+    private final TwoFactorAuth twoFactorAuth = new TwoFactorAuth();
 
     @Data
     public static class Auth {
@@ -37,11 +38,39 @@ public class AuthProperties {
     }
 
     @Data
-    public static class Otp {
-        private String issuerName;
+    public static class TwoFactorAuth {
+        private boolean enabled;
+        private TwoFactorAuthMethod method;
         private int verifyExpDays;
-        private int qrCodeWidth;
-        private int qrCodeHeight;
+        private int verifyLimitSeconds;
+        private int verifyLimitCount;
+        private int dailyLimitCount;
+
+        private TOtp totp;
+        private Email email;
+        private Sms sms;
+
+        @Data
+        public static class TOtp {
+            private String issuerName;
+            private int qrCodeWidth;
+            private int qrCodeHeight;
+        }
+
+        @Data
+        public static class Email {
+            private String protocol;
+            private String host;
+            private int port;
+            private String userName;
+            private String password;
+            private String senderEmail;
+        }
+
+        @Data
+        public static class Sms {
+            private String senderNumber;
+        }
     }
 
 }

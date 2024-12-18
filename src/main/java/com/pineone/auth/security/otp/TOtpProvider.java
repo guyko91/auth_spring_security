@@ -39,7 +39,7 @@ public class TOtpProvider implements OtpProvidable {
 
     @Override
     public String createOtpAuthUrl(String secretKey, String account) {
-        String issuer = authProperties.getOtp().getIssuerName();
+        String issuer = authProperties.getTwoFactorAuth().getTotp().getIssuerName();
 
         return "otpauth://totp/"
             + URLEncoder.encode(issuer + ":" + account, StandardCharsets.UTF_8).replace("+", "%20")

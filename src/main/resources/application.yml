@@ -107,8 +107,26 @@ prop:
     otpRequireRedirectUri: http://localhost:8080/public/view/otp
     loginSuccessTokenQueryParam: tokenKey
     otpQrCodeQueryParam: otpQrCode
-  otp:
-    issuerName: "Auth Server"
+  twoFactorAuth:
+    enabled: true
+    method: totp
     verifyExpDays: 30
-    qrCodeWidth: 200
-    qrCodeHeight: 200
+    verifyLimitSeconds: 300
+    verifyLimitCount: 5
+    dailyLimitCount: 10
+
+    totp:
+      issuerName: "Auth Server"
+      qrCodeWidth: 200
+      qrCodeHeight: 200
+
+    email:
+      protocol: "smtp"
+      host: "webmail.pineone.com"
+      port: 587
+      userName: "help@coolstay.co.kr"
+      password: "pine1994!!"
+      senderEmail: "help@coolstay.co.kr"
+
+    sms:
+      senderNumber: "18334123"

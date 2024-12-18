@@ -1,6 +1,8 @@
-package com.pineone.auth.security.cipher;
+package com.pineone.auth.api.util;
 
+import com.pineone.auth.api.controller.exception.CipherException;
 import com.pineone.auth.api.service.BidirectionalCipher;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Base64;
 import javax.crypto.Cipher;
@@ -9,14 +11,14 @@ import javax.crypto.spec.SecretKeySpec;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AESEncryptor implements BidirectionalCipher {
+public class AESCipher implements BidirectionalCipher {
 
     private static final String ALGORITHM = "AES/CBC/PKCS5Padding";
     private static final String SECRET_KEY_ALGORITHM = "AES";
 
     // 암호화 메서드
     @Override
-    public String encrypt(String base64SecretKey, String plainText) throws Exception {
+    public String encrypt(String base64SecretKey, String plainText) throws CipherException {
         // SecretKeySpec 생성 (256비트 = 32바이트)
         byte[] secretKey = Base64.getDecoder().decode(base64SecretKey);
         SecretKeySpec keySpec = new SecretKeySpec(secretKey, SECRET_KEY_ALGORITHM);
@@ -27,24 +29,29 @@ public class AESEncryptor implements BidirectionalCipher {
         random.nextBytes(iv);
         IvParameterSpec ivSpec = new IvParameterSpec(iv);
 
-        // Cipher 인스턴스 생성
-        Cipher cipher = Cipher.getInstance(ALGORITHM);
-        cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+        byte[] combined;
+        try {
+            // Cipher 인스턴스 생성
+            Cipher cipher = Cipher.getInstance(ALGORITHM);
+            cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
 
-        // 암호화 수행
-        byte[] encrypted = cipher.doFinal(plainText.getBytes("UTF-8"));
+            // 암호화 수행
+            byte[] encrypted = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
 
-        // IV와 암호문을 합쳐서 Base64로 인코딩하여 반환
-        byte[] combined = new byte[iv.length + encrypted.length];
-        System.arraycopy(iv, 0, combined, 0, iv.length);
-        System.arraycopy(encrypted, 0, combined, iv.length, encrypted.length);
+            // IV와 암호문을 합쳐서 Base64로 인코딩하여 반환
+            combined = new byte[iv.length + encrypted.length];
+            System.arraycopy(iv, 0, combined, 0, iv.length);
+            System.arraycopy(encrypted, 0, combined, iv.length, encrypted.length);
+        }catch (Exception e) {
+            throw new CipherException();
+        }
 
         return Base64.getEncoder().encodeToString(combined);
     }
 
     // 복호화 메서드
     @Override
-    public String decrypt(String base64SecretKey, String base64EncryptedValue) throws Exception {
+    public String decrypt(String base64SecretKey, String base64EncryptedValue) throws CipherException {
         // SecretKeySpec 생성
         byte[] secretKey = Base64.getDecoder().decode(base64SecretKey);
         SecretKeySpec keySpec = new SecretKeySpec(secretKey, SECRET_KEY_ALGORITHM);
@@ -60,14 +67,17 @@ public class AESEncryptor implements BidirectionalCipher {
 
         IvParameterSpec ivSpec = new IvParameterSpec(iv);
 
-        // Cipher 인스턴스 생성
-        Cipher cipher = Cipher.getInstance(ALGORITHM);
-        cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
+        try {
+            Cipher cipher = Cipher.getInstance(ALGORITHM);
+            cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
 
-        // 복호화 수행
-        byte[] decrypted = cipher.doFinal(encrypted);
+            // 복호화 수행
+            byte[] decrypted = cipher.doFinal(encrypted);
 
-        return new String(decrypted, "UTF-8");
+            return new String(decrypted, StandardCharsets.UTF_8);
+        }catch (Exception e) {
+            throw new CipherException();
+        }
     }
 
     // 키 생성 유틸리티 메서드

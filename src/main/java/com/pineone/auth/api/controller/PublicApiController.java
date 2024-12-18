@@ -4,7 +4,7 @@ import com.pineone.auth.api.controller.constant.ApiResult;
 import com.pineone.auth.api.controller.constant.SuccessCode;
 import com.pineone.auth.api.controller.dto.AuthResponse;
 import com.pineone.auth.api.controller.dto.LoginRequest;
-import com.pineone.auth.api.controller.dto.OtpVerifyRequest;
+import com.pineone.auth.api.controller.dto.TwoFactorVerifyRequest;
 import com.pineone.auth.api.controller.dto.SignUpRequest;
 import com.pineone.auth.api.controller.dto.TokenResponse;
 import com.pineone.auth.api.service.AuthFacade;
@@ -58,11 +58,11 @@ public class PublicApiController {
             .body(ApiResult.response(SuccessCode.ACCEPTED_OTP_REQUIRED, result));
     }
 
-    @PostMapping("otp-verify")
-    public ResponseEntity<ApiResult<AuthResponse>> otpVerify(@RequestBody @Valid OtpVerifyRequest otpVerifyRequest) {
+    @PostMapping("2fa-verify")
+    public ResponseEntity<ApiResult<AuthResponse>> twoFactorAuthVerify(@RequestBody @Valid TwoFactorVerifyRequest twoFactorVerifyRequest) {
 
-        String tokenKey = otpVerifyRequest.tokenKey();
-        String code = otpVerifyRequest.code();
+        String tokenKey = twoFactorVerifyRequest.tokenKey();
+        String code = twoFactorVerifyRequest.code();
         LocalDateTime verifyDateTime = LocalDateTime.now();
 
         authFacade.verifyUserOtp(tokenKey, code, verifyDateTime);

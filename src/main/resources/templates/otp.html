@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OTP 인증</title>
+  <title>2FA 인증</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -85,7 +85,7 @@
     }
 
     // OTP 인증 요청
-    fetch('/public/api/otp-verify', {
+    fetch('/public/api/2fa-verify', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -1,10 +1,10 @@
 package com.pineone.auth.security.oauth;
 
 import com.pineone.auth.api.controller.constant.ErrorCode;
-import com.pineone.auth.api.service.UserOtpService;
+import com.pineone.auth.api.service.User2FAService;
 import com.pineone.auth.api.service.UserTokenService;
 import com.pineone.auth.api.service.dto.AuthTokenCreateCommand;
-import com.pineone.auth.api.service.dto.OtpRequiredResult;
+import com.pineone.auth.api.service.dto.TwoFactorAuthRequiredResult;
 import com.pineone.auth.security.ServletAuthHandler;
 import com.pineone.auth.security.UserPrincipal;
 import com.pineone.auth.security.token.TokenHandler;
@@ -27,7 +27,7 @@ public class OAuth2AuthenticationHandler implements AuthenticationSuccessHandler
     private final TokenHandler tokenHandler;
     private final ServletAuthHandler servletAuthHandler;
     private final UserTokenService userTokenService;
-    private final UserOtpService userOtpService;
+    private final User2FAService user2FAService;
 
     /**
      * OAuth 인증 성공 핸들러
@@ -45,7 +45,7 @@ public class OAuth2AuthenticationHandler implements AuthenticationSuccessHandler
 
         AuthTokenCreateCommand authTokenCreateCommand = AuthTokenCreateCommand.of(userPrincipal.getSeq(), tokenPairDto);
         String tokenUuid = userTokenService.saveAuthToken(authTokenCreateCommand);
-        OtpRequiredResult otpResult = userOtpService.checkUserOtpVerifyRequired(userPrincipal.getSeq());
+        TwoFactorAuthRequiredResult otpResult = user2FAService.checkUser2FARequired(userPrincipal.getSeq());
 
         servletAuthHandler.processOAuthTokenResponse(response, tokenUuid, otpResult);
     }

@@ -207,11 +207,11 @@
     })
     .then(data => {
       const tokenKey = data.data.tokenKey;
-      const otpRequired = data.data.otpRequire.otpRequired;
+      const authRequired = data.data.authRequire.authRequired;
 
-      if (data.code === '20200001' && otpRequired) {
-        const otpQrCode = data.data.otpRequire.otpQrCode;
-        redirectToOtpPage(tokenKey, otpQrCode);
+      if (data.code === '20200001' && authRequired) {
+        const authData = data.data.authRequire.authInfo;
+        redirectTo2FAPage(tokenKey, authData);
         return;
       }
 
@@ -227,23 +227,28 @@
     window.location.href = url;
   }
 
-  function redirectToOtpPage(tokenKey, otpQrCode) {
+  function redirectTo2FAPage(tokenKey, authData) {
+
     const form = document.createElement('form');
     form.method = 'POST';
-    form.action = '/public/view/otp';
+    form.action = '/public/view/2fa';
 
-    // tokenKey와 otpQrCode를 숨겨진 필드로 추가
-    const tokenKeyInput = document.createElement('input');
-    tokenKeyInput.type = 'hidden';
-    tokenKeyInput.name = 'tokenKey';
-    tokenKeyInput.value = tokenKey;
-    form.appendChild(tokenKeyInput);
+    const fields = [
+      { name: 'tokenKey', value: tokenKey },
+      { name: 'method', value: authData.method },
+      { name: 'target', value: authData.target },
+      { name: 'limitCount', value: authData.limitCount },
+      { name: 'createdAt', value: authData.createdAt },
+      { name: 'expireAt', value: authData.expireAt }
+    ];
 
-    const otpQrCodeInput = document.createElement('input');
-    otpQrCodeInput.type = 'hidden';
-    otpQrCodeInput.name = 'otpQrCode';
-    otpQrCodeInput.value = otpQrCode;
-    form.appendChild(otpQrCodeInput);
+    fields.forEach(field => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = field.name;
+      input.value = field.value;
+      form.appendChild(input);
+    });
 
     // 폼을 제출하여 서버로 POST 요청을 보냄
     document.body.appendChild(form);

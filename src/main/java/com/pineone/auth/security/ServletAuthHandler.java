@@ -3,7 +3,8 @@ package com.pineone.auth.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pineone.auth.api.controller.constant.ApiResult;
 import com.pineone.auth.api.controller.constant.ErrorCode;
-import com.pineone.auth.api.service.dto.OtpRequiredResult;
+import com.pineone.auth.api.service.dto.TwoFactorAuthRequiredResult;
+import com.pineone.auth.api.service.model.TwoFactorAuthInfoProvidable;
 import com.pineone.auth.config.AuthProperties;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,12 +27,12 @@ public class ServletAuthHandler {
     public  final String AUTHORIZATION_HEADER_KEY = "Authorization";
 
     public void processOAuthTokenResponse(HttpServletResponse response, String tokenUuid,
-        OtpRequiredResult otpResult) throws IOException {
+        TwoFactorAuthRequiredResult otpResult) throws IOException {
 
-        if (!otpResult.otpRequired()) {
-            toSuccessRedirectResponse(response, tokenUuid);
+        if (otpResult.twoFactorAuthRequired()) {
+            toOtpPageRedirectResponse(response, tokenUuid, otpResult.twoFactorAuthInfoProvidable());
         }else {
-            toOtpPageRedirectResponse(response, tokenUuid, otpResult.otpQrCode());
+            toSuccessRedirectResponse(response, tokenUuid);
         }
     }
 
@@ -64,10 +65,11 @@ public class ServletAuthHandler {
         );
     }
 
-    private void toOtpPageRedirectResponse(HttpServletResponse response, String tokenUuid, String otpQrCode) throws IOException {
+    private void toOtpPageRedirectResponse(HttpServletResponse response, String tokenUuid, TwoFactorAuthInfoProvidable authInfo) throws IOException {
         String redirectUri = authProperties.getOauth2().getOtpRequireRedirectUri();
         String tokenKeyQueryParamName = authProperties.getOauth2().getLoginSuccessTokenQueryParam();
         String otpQrCodeQueryParamName = authProperties.getOauth2().getOtpQrCodeQueryParam();
+        String totpQrCode = authInfo.getTarget();
 
         response.setContentType("text/html;charset=UTF-8");
 
@@ -90,7 +92,7 @@ public class ServletAuthHandler {
         """.formatted(
                 redirectUri,
                 tokenKeyQueryParamName, tokenUuid,
-                otpQrCodeQueryParamName, otpQrCode
+                otpQrCodeQueryParamName, totpQrCode
             );
 
         response.getWriter().write(htmlContent);

@@ -6,7 +6,7 @@ import com.pineone.auth.api.model.User;
 import com.pineone.auth.api.model.UserAuthToken;
 import com.pineone.auth.api.service.dto.AuthTokenCreateCommand;
 import com.pineone.auth.api.service.dto.LoginResult;
-import com.pineone.auth.api.service.dto.OtpRequiredResult;
+import com.pineone.auth.api.service.dto.TwoFactorAuthRequiredResult;
 import com.pineone.auth.api.service.dto.TokenRefreshResult;
 import com.pineone.auth.api.service.dto.SignUpResult;
 import com.pineone.auth.api.service.dto.SignupCommand;
@@ -27,7 +27,7 @@ public class AuthFacade {
 
     private final UserService userService;
     private final UserTokenService userTokenService;
-    private final UserOtpService userOtpService;
+    private final User2FAService user2FAService;
 
     private final SecurityHandler securityHandler;
     private final TokenHandler tokenHandler;
@@ -38,9 +38,9 @@ public class AuthFacade {
 
         TokenPairDto tokenPair = tokenHandler.createTokenPair(userPrincipal);
         String tokenUuid = createAndGetAuthTokenUuid(userPrincipal.getSeq(), tokenPair);
-        OtpRequiredResult otpResult = userOtpService.checkUserOtpVerifyRequired(userPrincipal.getSeq());
+        TwoFactorAuthRequiredResult twoFactorCheckResult = user2FAService.checkUser2FARequired(userPrincipal.getSeq());
 
-        return LoginResult.of(tokenUuid, user, otpResult);
+        return LoginResult.of(tokenUuid, user, twoFactorCheckResult);
     }
 
     public SignUpResult signUp(SignupCommand command) {
@@ -51,9 +51,9 @@ public class AuthFacade {
 
         TokenPairDto tokenPair = tokenHandler.createTokenPair(userPrincipal);
         String tokenUuid = createAndGetAuthTokenUuid(userPrincipal.getSeq(), tokenPair);
-        OtpRequiredResult otpResult = userOtpService.createEncodedOtpSecret(userPrincipal.getSeq());
+        TwoFactorAuthRequiredResult twoFactorCheckResult = user2FAService.create2FARequireInfo(userPrincipal.getSeq());
 
-        return SignUpResult.of(user, tokenUuid, otpResult);
+        return SignUpResult.of(user, tokenUuid, twoFactorCheckResult);
     }
 
     public TokenInfoResult getTokenPair(String tokenUuid) {
@@ -65,8 +65,8 @@ public class AuthFacade {
         UserAuthToken userAuthToken = findUserAuthTokenBy(tokenKey);
         long userSeq = userAuthToken.getUserSeq();
 
-        boolean otpCodeMatched = userOtpService.verifyUserOtpCode(userSeq, inputCode, verifyDateTime);
-        if (!otpCodeMatched) { throw new BusinessException(ErrorCode.BAD_REQUEST_INVALID_PARAMETER_OTP_CODE); }
+        boolean otpCodeMatched = user2FAService.verifyUser2FACode(userSeq, inputCode, verifyDateTime);
+        if (!otpCodeMatched) { throw new BusinessException(ErrorCode.BAD_REQUEST_INVALID_PARAMETER_2FA_CODE_MISMATCH); }
     }
 
     public TokenRefreshResult refresh(String accessToken, String refreshToken) {

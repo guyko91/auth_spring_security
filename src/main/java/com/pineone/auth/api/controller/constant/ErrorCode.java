@@ -26,7 +26,8 @@ public enum ErrorCode implements ResponseCode{
     // ===============================================================================================================
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "40000000", "잘못된 요청"),
     BAD_REQUEST_INVALID_PARAMETER(HttpStatus.BAD_REQUEST, "40001000", "잘못된 파라미터"),
-    BAD_REQUEST_INVALID_PARAMETER_OTP_CODE(HttpStatus.BAD_REQUEST, "40001001", "OTP 코드가 유효하지 않음"),
+    BAD_REQUEST_INVALID_PARAMETER_2FA_CODE_MISMATCH(HttpStatus.BAD_REQUEST, "40001001", "2FA 인증코드가 유효하지 않음"),
+    BAD_REQUEST_INVALID_PARAMETER_2FA_RETRY_LIMIT(HttpStatus.BAD_REQUEST, "40001002", "2FA 재시도 횟수 초과"),
 
     // ===============================================================================================================
     // 401 Unauthorized
@@ -44,7 +45,9 @@ public enum ErrorCode implements ResponseCode{
     UNAUTHORIZED_REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "40101202", "리프레시 토큰 만료"),
     UNAUTHORIZED_REFRESH_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "40101203", "리프레시 토큰이 유효하지 않음"),
 
-    UNAUTHORIZED_OTP_REQUIRED(HttpStatus.UNAUTHORIZED, "40101300", "추가 OTP 인증이 필요합니다"),
+    UNAUTHORIZED_2FA_REQUIRED(HttpStatus.UNAUTHORIZED, "40101300", "2FA 인증이 필요합니다"),
+    UNAUTHORIZED_2FA_DAILY_LIMIT(HttpStatus.UNAUTHORIZED, "40101301", "2FA 일일 인증 횟수 제한 초과"),
+
 
     // ===============================================================================================================
     // 403 Forbidden
