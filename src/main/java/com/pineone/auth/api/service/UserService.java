@@ -1,7 +1,5 @@
 package com.pineone.auth.api.service;
 
-import com.pineone.auth.api.controller.constant.ErrorCode;
-import com.pineone.auth.api.controller.exception.BusinessException;
 import com.pineone.auth.api.model.User;
 import com.pineone.auth.api.repository.UserRepository;
 import java.util.Optional;
@@ -24,12 +22,6 @@ public class UserService {
 
     public Optional<User> getUserBy(String id) {
         return userRepository.findById(id);
-    }
-
-    public void checkUserIdDuplication(String id) {
-        if (userRepository.existsById(id)) {
-            throw new BusinessException(ErrorCode.CONFLICT, "ID is duplicated");
-        }
     }
 
     @Transactional

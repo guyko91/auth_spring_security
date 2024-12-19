@@ -44,7 +44,7 @@ public class AuthFacade {
     }
 
     public SignUpResult signUp(SignupCommand command) {
-        userService.checkUserIdDuplication(command.id());
+        checkUserIdDuplication(command.id());
 
         User user = userService.createUserWith(command.id(), command.password(), command.name());
         UserPrincipal userPrincipal = securityHandler.authenticateIdPwd(command.id(), command.password());
@@ -85,6 +85,11 @@ public class AuthFacade {
 
     public void logout(String refreshToken) {
         userTokenService.logoutUserToken(refreshToken);
+    }
+
+    private void checkUserIdDuplication(String id) {
+        userService.getUserBy(id)
+            .ifPresent(user -> { throw new BusinessException(ErrorCode.CONFLICT, "ID is duplicated"); });
     }
 
     private void checkUserRefreshTokenExists(String refreshToken) {
