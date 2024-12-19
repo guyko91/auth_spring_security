@@ -26,9 +26,4 @@ public class UserToken {
     public static UserToken create(Long userSeq, String refreshToken, LocalDateTime expiration) {
         return new UserToken(null, userSeq, refreshToken, expiration);
     }
-
-    public void updateRefreshToken(String token, LocalDateTime localDateTime) {
-        this.refreshToken = token;
-        this.expiration = localDateTime;
-    }
 }
