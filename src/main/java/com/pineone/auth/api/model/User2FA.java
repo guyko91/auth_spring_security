@@ -10,7 +10,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.security.SecureRandom;
 import java.time.LocalDateTime;
 
 @Entity
@@ -96,11 +95,5 @@ public class User2FA extends BaseTimeEntity {
     public TwoFactorAuthMethod getAuthMethod() { return method; }
 
     public String getAuthTarget() { return target; }
-
-    public String generateRandomSixDigitCode() {
-        SecureRandom random = new SecureRandom();
-        int code = random.nextInt(900000) + 100000; // 100000 ~ 999999 사이
-        return String.valueOf(code);
-    }
 
 }
