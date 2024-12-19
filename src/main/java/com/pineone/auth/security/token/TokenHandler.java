@@ -4,7 +4,6 @@ import com.pineone.auth.api.controller.constant.ErrorCode;
 import com.pineone.auth.api.controller.exception.BusinessException;
 import com.pineone.auth.config.AuthProperties;
 import com.pineone.auth.security.UserPrincipal;
-import com.pineone.auth.security.token.exception.TokenValidateException;
 import java.util.Date;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -24,7 +23,7 @@ public class TokenHandler {
         return new TokenPairDto(accessToken, refreshToken);
     }
 
-    public void validateTokenRefreshRequest(String accessToken, String refreshToken) throws TokenValidateException {
+    public void validateTokenRefreshRequest(String accessToken, String refreshToken) {
         TokenClaims accessTokenClaims = tokenProvider.validateToken(accessToken);
         TokenClaims refreshTokenClaims = tokenProvider.validateToken(refreshToken);
 
@@ -33,7 +32,7 @@ public class TokenHandler {
         validateRefreshReqRefreshToken(refreshTokenClaims);
     }
 
-    public UserPrincipal validateAndGetUserPrincipalFrom(String accessToken) throws TokenValidateException {
+    public UserPrincipal validateAndGetUserPrincipalFrom(String accessToken) {
         TokenClaims claims = tokenProvider.validateToken(accessToken);
         return claims.toUserPrincipal();
     }

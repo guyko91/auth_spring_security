@@ -7,9 +7,7 @@ import com.pineone.auth.security.token.TokenClaims;
 import com.pineone.auth.security.token.TokenDto;
 import com.pineone.auth.security.token.TokenProvidable;
 import com.pineone.auth.security.token.TokenType;
-import com.pineone.auth.security.token.exception.TokenValidateException;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -52,13 +50,9 @@ public class JwtProvider implements TokenProvidable {
     }
 
     @Override
-    public TokenClaims validateToken(String tokenString) throws TokenValidateException {
-        try {
-           Claims jwtClaims = parseTokenString(tokenString);
-            return TokenClaims.of(jwtClaims);
-        }catch (JwtException e) {
-            throw new TokenValidateException();
-        }
+    public TokenClaims validateToken(String tokenString) {
+        Claims jwtClaims = parseTokenString(tokenString);
+        return TokenClaims.of(jwtClaims);
     }
 
     private PrivateKey getPrivateKey() {
