@@ -61,7 +61,7 @@ public class AuthFacade {
         return new TokenInfoResult(userAuthToken.getAccessToken(), userAuthToken.getRefreshToken());
     }
 
-    public void verifyUserOtp(String tokenKey, String inputCode, LocalDateTime verifyDateTime) {
+    public void verifyUser2FA(String tokenKey, String inputCode, LocalDateTime verifyDateTime) {
         UserAuthToken userAuthToken = findUserAuthTokenBy(tokenKey);
         long userSeq = userAuthToken.getUserSeq();
 

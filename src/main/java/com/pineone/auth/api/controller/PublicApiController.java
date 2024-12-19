@@ -65,7 +65,7 @@ public class PublicApiController {
         String code = twoFactorVerifyRequest.code();
         LocalDateTime verifyDateTime = LocalDateTime.now();
 
-        authFacade.verifyUserOtp(tokenKey, code, verifyDateTime);
+        authFacade.verifyUser2FA(tokenKey, code, verifyDateTime);
 
         return ResponseEntity.ok(ApiResult.ok());
     }
