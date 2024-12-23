@@ -1,4 +1,4 @@
-package com.pineone.auth.security.token.jwt;
+package com.pineone.auth.security.token;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pineone.auth.api.controller.constant.ApiResult;

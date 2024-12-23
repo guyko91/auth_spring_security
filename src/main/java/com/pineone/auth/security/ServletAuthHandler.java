@@ -67,9 +67,7 @@ public class ServletAuthHandler {
 
     private void toOtpPageRedirectResponse(HttpServletResponse response, String tokenUuid, TwoFactorAuthInfoProvidable authInfo) throws IOException {
         String redirectUri = authProperties.getOauth2().getOtpRequireRedirectUri();
-        String tokenKeyQueryParamName = authProperties.getOauth2().getLoginSuccessTokenQueryParam();
-        String otpQrCodeQueryParamName = authProperties.getOauth2().getOtpQrCodeQueryParam();
-        String totpQrCode = authInfo.getTarget();
+        String target = authInfo.getTarget();
 
         response.setContentType("text/html;charset=UTF-8");
 
@@ -83,6 +81,10 @@ public class ServletAuthHandler {
                 <form id='postForm' action='%s' method='post'>
                     <input type='hidden' name='%s' value='%s'>
                     <input type='hidden' name='%s' value='%s'>
+                    <input type='hidden' name='%s' value='%s'>
+                    <input type='hidden' name='%s' value='%s'>
+                    <input type='hidden' name='%s' value='%s'>
+                    <input type='hidden' name='%s' value='%s'>
                 </form>
                 <script>
                     document.getElementById('postForm').submit();
@@ -91,8 +93,12 @@ public class ServletAuthHandler {
             </html>
         """.formatted(
                 redirectUri,
-                tokenKeyQueryParamName, tokenUuid,
-                otpQrCodeQueryParamName, totpQrCode
+                "tokenKey", tokenUuid,
+                "target", target,
+                "method", authInfo.getMethod(),
+                "limitCount", authInfo.getLimitCount(),
+                "createdAt", authInfo.getCreatedDateTime(),
+                "expireAt", authInfo.getExpireDateTime()
             );
 
         response.getWriter().write(htmlContent);

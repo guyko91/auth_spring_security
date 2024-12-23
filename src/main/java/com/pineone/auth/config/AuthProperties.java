@@ -34,7 +34,6 @@ public class AuthProperties {
         private String loginSuccessRedirectUri;
         private String otpRequireRedirectUri;
         private String loginSuccessTokenQueryParam;
-        private String otpQrCodeQueryParam;
     }
 
     @Data

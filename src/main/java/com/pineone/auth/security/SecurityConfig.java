@@ -5,8 +5,8 @@ import static org.springframework.boot.autoconfigure.security.servlet.PathReques
 import com.pineone.auth.security.oauth.CustomOAuth2UserService;
 import com.pineone.auth.security.oauth.OAuth2AuthenticationHandler;
 import com.pineone.auth.security.token.TokenHandler;
-import com.pineone.auth.security.token.jwt.TokenAccessDeniedHandler;
-import com.pineone.auth.security.token.jwt.TokenAuthenticationEntryPoint;
+import com.pineone.auth.security.token.TokenAccessDeniedHandler;
+import com.pineone.auth.security.token.TokenAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -104,9 +104,8 @@ prop:
     refreshTokenExpMilli: 864000000
   oauth2:
     loginSuccessRedirectUri: http://localhost:8080/public/view/success
-    otpRequireRedirectUri: http://localhost:8080/public/view/otp
+    otpRequireRedirectUri: http://localhost:8080/public/view/2fa
     loginSuccessTokenQueryParam: tokenKey
-    otpQrCodeQueryParam: otpQrCode
   twoFactorAuth:
     enabled: true
     method: totp
