@@ -1,6 +1,7 @@
 package com.pineone.auth.security;
 
 import com.pineone.auth.api.controller.constant.ErrorCode;
+import com.pineone.auth.api.controller.exception.BusinessException;
 import com.pineone.auth.security.token.TokenHandler;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -49,6 +50,8 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
             setTokenAuthenticationExceptionAttribute(request, ErrorCode.UNAUTHORIZED_TOKEN_ERROR);
         } catch (AuthenticationException e) {
             setTokenAuthenticationExceptionAttribute(request, ErrorCode.UNAUTHORIZED);
+        } catch (BusinessException e) {
+            setTokenAuthenticationExceptionAttribute(request, e.getErrorCode());
         } catch (Exception e) {
             setTokenAuthenticationExceptionAttribute(request, ErrorCode.INTERNAL_SERVER_ERROR);
         } finally {
@@ -66,8 +69,7 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
     private String parseAccessToken(HttpServletRequest request) {
         return servletAuthHandler.getAccessTokenStringFrom(request)
-            .orElseThrow(
-                () -> new CustomAuthenticationException(ErrorCode.UNAUTHORIZED, "인증 토큰이 없습니다."));
+            .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED));
     }
 
     private void setTokenAuthenticationExceptionAttribute(HttpServletRequest request, ErrorCode errorCode) {
