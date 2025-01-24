@@ -271,3 +271,17 @@ prop:
 * plantuml 플러그인 설치 후 아래 UML 참조
   * uml/auth-flow.puml (전반적인 인증 흐름)
   * uml/oauth-flow.puml (OAuth2 연동 플로우)
+
+## 환경 변수 설정
+
+```text
+FACEBOOK-CLIENT-ID={페이스북 클라이언트 ID};
+FACEBOOK-CLIENT-SECRET={페이스북 클라이언트 시크릿};
+GOOGLE-CLIENT-ID={구글 클라이언트 ID};
+GOOGLE-CLIENT-SECRET={구글 클라이언트 시크릿};
+KAKAO-CLIENT-ID={카카오 클라이언트 ID};
+KAKAO-CLIENT-SECRET={카카오 클라이언트 시크릿};
+NAVER-CLIENT-ID={네이버 클라이언트 ID};
+NAVER-CLIENT-SECRET={네이버 클라이언트 시크릿};
+REDIS-PASSWORD={레디스 비밀번호};
+```
